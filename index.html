@@ -462,6 +462,7 @@
   .tab-btn:nth-child(3).active{color:var(--gold);}
   .tab-btn.active .tab-hint{color:var(--paper);}
 </style>
+<script src="https://unpkg.com/fix-webm-duration@1.0.6/fix-webm-duration.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1369,98 +1370,14 @@ function drawVignette(ctx, cw, ch){
   ctx.fillRect(0,0,cw,ch);
 }
 
-// WebM generado por MediaRecorder puede quedar con Duration ausente.
-// Inserta/reemplaza Duration dentro de Info usando el tiempo real de grabación.
-function fixWebmDuration(blob, durationSec){
-  return blob.arrayBuffer().then(buffer=>{
-    const src = new Uint8Array(buffer);
-
-    function vintWidth(first){
-      for(let i=0;i<8;i++) if(first & (0x80 >> i)) return i+1;
-      return 0;
-    }
-    function readId(pos){
-      const w = vintWidth(src[pos]);
-      if(!w || pos+w>src.length) return null;
-      let v=0; for(let i=0;i<w;i++) v=v*256+src[pos+i];
-      return {value:v,width:w,start:pos};
-    }
-    function readSize(pos){
-      const w = vintWidth(src[pos]);
-      if(!w || pos+w>src.length) return null;
-      let v=src[pos] & ((1 << (8-w))-1);
-      for(let i=1;i<w;i++) v=v*256+src[pos+i];
-      return {value:v,width:w,start:pos,unknown:v === Math.pow(2,7*w)-1};
-    }
-    function writeSize(value,width){
-      const max=Math.pow(2,7*width)-2;
-      if(value<0 || value>max) throw new Error('WebM Info demasiado grande para reparar');
-      const out=new Uint8Array(width); let v=value;
-      for(let i=width-1;i>=0;i--){ out[i]=v&255; v=Math.floor(v/256); }
-      out[0] |= (0x80 >> (width-1));
-      return out;
-    }
-    function findElement(start,end,targetId){
-      let p=start;
-      while(p+2<=end){
-        const id=readId(p); if(!id) break;
-        const sz=readSize(p+id.width); if(!sz) break;
-        const dataStart=p+id.width+sz.width;
-        const dataEnd=sz.unknown ? end : Math.min(end,dataStart+sz.value);
-        if(id.value===targetId) return {id,size:sz,dataStart,dataEnd};
-        if(dataEnd<=p) break;
-        p=dataEnd;
-      }
-      return null;
-    }
-
-    const segment=findElement(0,src.length,0x18538067);
-    if(!segment) return blob;
-    const segEnd=segment.size.unknown ? src.length : Math.min(src.length,segment.dataEnd);
-    const info=findElement(segment.dataStart,segEnd,0x1549A966);
-    if(!info || info.size.unknown) return blob;
-
-    let timecodeScale=1000000;
-    const scaleEl=findElement(info.dataStart,info.dataEnd,0x2AD7B1);
-    if(scaleEl && scaleEl.dataEnd-scaleEl.dataStart<=8){
-      let v=0; for(let i=scaleEl.dataStart;i<scaleEl.dataEnd;i++) v=v*256+src[i];
-      if(v>0) timecodeScale=v;
-    }
-
-    const durationValue=Math.max(0.001,durationSec)*1e9/timecodeScale;
-    const payload=new ArrayBuffer(8);
-    new DataView(payload).setFloat64(0,durationValue,false);
-    const durElement=new Uint8Array(11);
-    durElement.set([0x44,0x89,0x88],0);
-    durElement.set(new Uint8Array(payload),3);
-
-    const existing=findElement(info.dataStart,info.dataEnd,0x4489);
-    let newInfoPayload;
-    if(existing){
-      const before=src.slice(info.dataStart,existing.id.start);
-      const after=src.slice(existing.dataEnd,info.dataEnd);
-      newInfoPayload=new Uint8Array(before.length+11+after.length);
-      newInfoPayload.set(before,0); newInfoPayload.set(durElement,before.length); newInfoPayload.set(after,before.length+11);
-    }else{
-      const oldPayload=src.slice(info.dataStart,info.dataEnd);
-      newInfoPayload=new Uint8Array(oldPayload.length+11);
-      newInfoPayload.set(oldPayload,0); newInfoPayload.set(durElement,oldPayload.length);
-    }
-
-    const headerLen=info.id.width+info.size.width;
-    const header=new Uint8Array(headerLen);
-    header.set(src.slice(info.id.start,info.id.start+info.id.width),0);
-    header.set(writeSize(newInfoPayload.length,info.size.width),info.id.width);
-
-    const replacement=new Uint8Array(header.length+newInfoPayload.length);
-    replacement.set(header,0); replacement.set(newInfoPayload,header.length);
-    const oldTotal=headerLen+(info.dataEnd-info.dataStart);
-    const out=new Uint8Array(src.length-oldTotal+replacement.length);
-    out.set(src.slice(0,info.id.start),0);
-    out.set(replacement,info.id.start);
-    out.set(src.slice(info.dataEnd),info.id.start+replacement.length);
-    return new Blob([out],{type:blob.type || 'video/webm'});
-  });
+// Reparación robusta de WebM generado por MediaRecorder.
+// La librería recalcula/reconstruye la metadata EBML necesaria en vez de
+// insertar Duration a mano, evitando romper SeekHead/Cues y el playback.
+async function fixWebmDuration(blob, durationSec){
+  if(typeof window.ysFixWebmDuration !== 'function'){
+    throw new Error('No se pudo cargar el reparador WebM. Comprueba la conexión a Internet y vuelve a intentarlo.');
+  }
+  return await window.ysFixWebmDuration(blob, Math.max(1, durationSec * 1000), { logger: false });
 }
 
 function seekTo(video, t){
