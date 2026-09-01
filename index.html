@@ -745,7 +745,7 @@ function daysSince(iso){
 
 async function loadTrends(){
   try{
-    const existing = await window.storage.get('tendencias-tattoo', false);
+    const existing = await localStore.get('tendencias-tattoo');
     if(existing && existing.value){
       const data = JSON.parse(existing.value);
       currentTrends = data;
@@ -798,7 +798,7 @@ Incluye entre 3 y 6 sonidos. Basa todo en resultados reales de tu búsqueda — 
     parsed.fecha = new Date().toISOString();
 
     currentTrends = parsed;
-    await window.storage.set('tendencias-tattoo', JSON.stringify(parsed), false);
+    await localStore.set('tendencias-tattoo', JSON.stringify(parsed));
     renderTrends(parsed);
     statusEl.textContent = 'Tendencias actualizadas.';
   } catch(err){
@@ -919,6 +919,19 @@ function requireAnthropicKey(statusSetter){
   }
   return true;
 }
+
+// ---------- Almacenamiento local (reemplaza window.storage, que solo existe dentro de Claude.ai) ----------
+const localStore = {
+  async get(key){
+    const raw = localStorage.getItem('inkbot_video_' + key);
+    if(raw === null) return null;
+    return { key, value: raw };
+  },
+  async set(key, value){
+    localStorage.setItem('inkbot_video_' + key, value);
+    return { key, value };
+  }
+};
 
 function setStatus(msg, isErr=false){
   const s = document.getElementById('status');
@@ -1054,14 +1067,14 @@ async function saveToHistory(tema, result){
   try{
     let historial = [];
     try{
-      const existing = await window.storage.get('guiones-historial', false);
+      const existing = await localStore.get('guiones-historial');
       if(existing && existing.value) historial = JSON.parse(existing.value);
     } catch(e){ /* no existe aún */ }
 
     historial.unshift({ tema, fecha: new Date().toISOString(), result });
     historial = historial.slice(0, 20);
 
-    await window.storage.set('guiones-historial', JSON.stringify(historial), false);
+    await localStore.set('guiones-historial', JSON.stringify(historial));
     renderHistory(historial);
   } catch(e){
     console.error('No se pudo guardar el historial', e);
@@ -1070,7 +1083,7 @@ async function saveToHistory(tema, result){
 
 async function loadHistory(){
   try{
-    const existing = await window.storage.get('guiones-historial', false);
+    const existing = await localStore.get('guiones-historial');
     if(existing && existing.value){
       renderHistory(JSON.parse(existing.value));
     }
@@ -1644,7 +1657,7 @@ document.getElementById('addCompetitor').addEventListener('click', ()=>addCompet
 
 async function loadLastAudit(){
   try{
-    const existing = await window.storage.get('auditoria-publica', false);
+    const existing = await localStore.get('auditoria-publica');
     if(existing && existing.value){
       renderAudit(JSON.parse(existing.value));
     }
@@ -1705,7 +1718,7 @@ Responde EXCLUSIVAMENTE un objeto JSON, sin texto adicional, sin markdown, sin b
     const parsed = JSON.parse(clean);
     parsed.fecha = new Date().toISOString();
 
-    await window.storage.set('auditoria-publica', JSON.stringify(parsed), false);
+    await localStore.set('auditoria-publica', JSON.stringify(parsed));
     renderAudit(parsed);
     statusEl.textContent = 'Listo.';
   } catch(err){
