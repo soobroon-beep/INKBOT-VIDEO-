@@ -1334,25 +1334,133 @@ function renderPhase3Clips(){
   });
 }
 
-function drawCover(ctx, video, cw, ch){
+function drawCover(ctx, video, cw, ch, zoom=1){
   const vw = video.videoWidth, vh = video.videoHeight;
   if(!vw || !vh) return;
-  const scale = Math.max(cw/vw, ch/vh);
+  const scale = Math.max(cw/vw, ch/vh) * zoom;
   const dw = vw*scale, dh = vh*scale;
   ctx.drawImage(video, (cw-dw)/2, (ch-dh)/2, dw, dh);
 }
 
-function drawOverlay(ctx, cw, ch, text){
+function drawOverlay(ctx, cw, ch, text, progress=1){
   if(!text) return;
+  const p = Math.max(0, Math.min(1, progress));
+  const eased = 1 - Math.pow(1-p, 3);
+  ctx.save();
+  ctx.globalAlpha = eased;
   ctx.font = "600 34px 'Big Shoulders Display', sans-serif";
   ctx.textAlign = 'center';
-  const y = ch * 0.82;
+  const y = ch * 0.82 + (1-eased)*28;
   const metrics = ctx.measureText(text.toUpperCase());
   const pad = 20;
-  ctx.fillStyle = 'rgba(18,15,14,0.72)';
+  ctx.fillStyle = 'rgba(18,15,14,0.78)';
   ctx.fillRect(cw/2 - metrics.width/2 - pad, y - 38, metrics.width + pad*2, 52);
   ctx.fillStyle = '#c79a3d';
   ctx.fillText(text.toUpperCase(), cw/2, y - 2);
+  ctx.restore();
+}
+
+function drawVignette(ctx, cw, ch){
+  const g = ctx.createRadialGradient(cw/2, ch/2, Math.min(cw,ch)*0.30, cw/2, ch/2, Math.max(cw,ch)*0.72);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(0.72, 'rgba(0,0,0,0.04)');
+  g.addColorStop(1, 'rgba(0,0,0,0.34)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,cw,ch);
+}
+
+// WebM generado por MediaRecorder puede quedar con Duration ausente.
+// Inserta/reemplaza Duration dentro de Info usando el tiempo real de grabación.
+function fixWebmDuration(blob, durationSec){
+  return blob.arrayBuffer().then(buffer=>{
+    const src = new Uint8Array(buffer);
+
+    function vintWidth(first){
+      for(let i=0;i<8;i++) if(first & (0x80 >> i)) return i+1;
+      return 0;
+    }
+    function readId(pos){
+      const w = vintWidth(src[pos]);
+      if(!w || pos+w>src.length) return null;
+      let v=0; for(let i=0;i<w;i++) v=v*256+src[pos+i];
+      return {value:v,width:w,start:pos};
+    }
+    function readSize(pos){
+      const w = vintWidth(src[pos]);
+      if(!w || pos+w>src.length) return null;
+      let v=src[pos] & ((1 << (8-w))-1);
+      for(let i=1;i<w;i++) v=v*256+src[pos+i];
+      return {value:v,width:w,start:pos,unknown:v === Math.pow(2,7*w)-1};
+    }
+    function writeSize(value,width){
+      const max=Math.pow(2,7*width)-2;
+      if(value<0 || value>max) throw new Error('WebM Info demasiado grande para reparar');
+      const out=new Uint8Array(width); let v=value;
+      for(let i=width-1;i>=0;i--){ out[i]=v&255; v=Math.floor(v/256); }
+      out[0] |= (0x80 >> (width-1));
+      return out;
+    }
+    function findElement(start,end,targetId){
+      let p=start;
+      while(p+2<=end){
+        const id=readId(p); if(!id) break;
+        const sz=readSize(p+id.width); if(!sz) break;
+        const dataStart=p+id.width+sz.width;
+        const dataEnd=sz.unknown ? end : Math.min(end,dataStart+sz.value);
+        if(id.value===targetId) return {id,size:sz,dataStart,dataEnd};
+        if(dataEnd<=p) break;
+        p=dataEnd;
+      }
+      return null;
+    }
+
+    const segment=findElement(0,src.length,0x18538067);
+    if(!segment) return blob;
+    const segEnd=segment.size.unknown ? src.length : Math.min(src.length,segment.dataEnd);
+    const info=findElement(segment.dataStart,segEnd,0x1549A966);
+    if(!info || info.size.unknown) return blob;
+
+    let timecodeScale=1000000;
+    const scaleEl=findElement(info.dataStart,info.dataEnd,0x2AD7B1);
+    if(scaleEl && scaleEl.dataEnd-scaleEl.dataStart<=8){
+      let v=0; for(let i=scaleEl.dataStart;i<scaleEl.dataEnd;i++) v=v*256+src[i];
+      if(v>0) timecodeScale=v;
+    }
+
+    const durationValue=Math.max(0.001,durationSec)*1e9/timecodeScale;
+    const payload=new ArrayBuffer(8);
+    new DataView(payload).setFloat64(0,durationValue,false);
+    const durElement=new Uint8Array(11);
+    durElement.set([0x44,0x89,0x88],0);
+    durElement.set(new Uint8Array(payload),3);
+
+    const existing=findElement(info.dataStart,info.dataEnd,0x4489);
+    let newInfoPayload;
+    if(existing){
+      const before=src.slice(info.dataStart,existing.id.start);
+      const after=src.slice(existing.dataEnd,info.dataEnd);
+      newInfoPayload=new Uint8Array(before.length+11+after.length);
+      newInfoPayload.set(before,0); newInfoPayload.set(durElement,before.length); newInfoPayload.set(after,before.length+11);
+    }else{
+      const oldPayload=src.slice(info.dataStart,info.dataEnd);
+      newInfoPayload=new Uint8Array(oldPayload.length+11);
+      newInfoPayload.set(oldPayload,0); newInfoPayload.set(durElement,oldPayload.length);
+    }
+
+    const headerLen=info.id.width+info.size.width;
+    const header=new Uint8Array(headerLen);
+    header.set(src.slice(info.id.start,info.id.start+info.id.width),0);
+    header.set(writeSize(newInfoPayload.length,info.size.width),info.id.width);
+
+    const replacement=new Uint8Array(header.length+newInfoPayload.length);
+    replacement.set(header,0); replacement.set(newInfoPayload,header.length);
+    const oldTotal=headerLen+(info.dataEnd-info.dataStart);
+    const out=new Uint8Array(src.length-oldTotal+replacement.length);
+    out.set(src.slice(0,info.id.start),0);
+    out.set(replacement,info.id.start);
+    out.set(src.slice(info.dataEnd),info.id.start+replacement.length);
+    return new Blob([out],{type:blob.type || 'video/webm'});
+  });
 }
 
 function seekTo(video, t){
@@ -1513,24 +1621,30 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
 
     const finished = new Promise(resolve => { recorder.onstop = resolve; });
     recorder.start();
+    const recordingStart = performance.now();
 
-    const blend = { mode:'single', a:null, b:null, alpha:0, text:'' };
+    const blend = { mode:'single', a:null, b:null, alpha:0, text:'', effectStart:performance.now(), clipDuration:4, textStart:performance.now() };
     let drawing = true;
 
     function drawLoop(){
       if(!drawing) return;
       ctx.fillStyle = '#120f0e';
       ctx.fillRect(0,0,CW,CH);
+      const effectElapsed = (performance.now() - blend.effectStart) / 1000;
+      const zoomProgress = Math.min(1, effectElapsed / Math.max(0.1, blend.clipDuration));
+      const zoom = 1 + 0.045 * zoomProgress;
+      const textProgress = Math.min(1, (performance.now() - blend.textStart) / 0.32);
       if(blend.mode === 'single' && blend.a){
-        drawCover(ctx, blend.a, CW, CH);
+        drawCover(ctx, blend.a, CW, CH, zoom);
       } else if(blend.mode === 'cross'){
         ctx.globalAlpha = 1 - blend.alpha;
-        drawCover(ctx, blend.a, CW, CH);
+        drawCover(ctx, blend.a, CW, CH, zoom);
         ctx.globalAlpha = blend.alpha;
-        drawCover(ctx, blend.b, CW, CH);
+        drawCover(ctx, blend.b, CW, CH, 1 + 0.045 * blend.alpha);
         ctx.globalAlpha = 1;
       }
-      drawOverlay(ctx, CW, CH, blend.text);
+      drawVignette(ctx, CW, CH);
+      drawOverlay(ctx, CW, CH, blend.text, textProgress);
       requestAnimationFrame(drawLoop);
     }
     drawLoop();
@@ -1538,7 +1652,7 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     const videoA = document.getElementById('p3VideoA');
     const videoB = document.getElementById('p3VideoB');
     const pool = [videoA, videoB];
-    const TRANSITION = 0.4;
+    const TRANSITION = 0.22; // transición rápida y punchy
 
     // precarga el primer clip y detecta su mejor momento
     await loadClipInto(pool[0], plan[0].file);
@@ -1565,6 +1679,9 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
       blend.mode = 'single';
       blend.a = cur;
       blend.text = p.clip.texto_pantalla || '';
+      blend.effectStart = performance.now();
+      blend.textStart = performance.now();
+      blend.clipDuration = targetDuration;
 
       let audioDone = Promise.resolve();
       if(p.narrationBuffer){
@@ -1590,6 +1707,9 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
 
         await next.play();
         blend.text = plan[i+1].clip.texto_pantalla || '';
+        blend.effectStart = performance.now();
+        blend.textStart = performance.now();
+        blend.clipDuration = plan[i+1].targetDuration;
 
         await new Promise(res=>{
           const t0 = performance.now();
@@ -1615,7 +1735,10 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     recorder.stop();
     await finished;
 
-    const blob = new Blob(chunks, { type: 'video/webm' });
+    const rawBlob = new Blob(chunks, { type: 'video/webm' });
+    const recordedDuration = Math.max(0.05, (performance.now() - recordingStart) / 1000);
+    p3Status.textContent = 'Reparando metadatos de duración...';
+    const blob = await fixWebmDuration(rawBlob, recordedDuration);
     const url = URL.createObjectURL(blob);
     const preview = document.getElementById('p3Preview');
     preview.src = url;
@@ -1624,7 +1747,7 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     dl.href = url;
     dl.style.display = 'block';
 
-    p3Status.textContent = 'Video listo.';
+    p3Status.textContent = `Video listo · ${recordedDuration.toFixed(1)} s`;
   } catch(err){
     console.error(err);
     p3Status.textContent = (err && err.message) ? err.message : 'Algo falló armando el video. Revisa que los clips hayan cargado bien e intenta de nuevo.';
