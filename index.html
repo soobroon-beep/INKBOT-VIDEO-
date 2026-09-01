@@ -389,6 +389,78 @@
   .rm-item{display:flex; gap:12px; padding:8px 0; font-size:13.5px; color:var(--paper-dim);}
   .rm-num{color:var(--gold); font-family:'Big Shoulders Display'; font-weight:700; min-width:20px;}
   .rm-current{color:var(--paper);}
+  .rm-item + .rm-item{border-top:1px solid var(--line);}
+
+  header{border-bottom:none; padding-bottom:0; margin-bottom:18px;}
+  .settings-toggle{
+    background:none;
+    border:1px solid var(--line-strong);
+    color:var(--paper-dim);
+    border-radius:2px;
+    padding:6px 12px;
+    font-family:'Work Sans', sans-serif;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .settings-toggle:hover{border-color:var(--gold); color:var(--gold);}
+
+  .settings-panel{
+    border:1px solid var(--line-strong);
+    border-radius:3px;
+    padding:0 16px;
+    margin-bottom:22px;
+    background:rgba(237,231,221,0.02);
+  }
+  .settings-panel summary{
+    padding:13px 0;
+    font-size:13.5px;
+    color:var(--gold);
+    list-style:none;
+  }
+  .settings-panel summary::-webkit-details-marker{display:none;}
+  .settings-panel summary::before{content:'+ '; color:var(--paper-dim);}
+  .settings-panel[open] summary::before{content:'– ';}
+  .settings-panel[open] summary{border-bottom:1px solid var(--line); margin-bottom:14px;}
+  .settings-panel .sub{margin-top:0;}
+  .settings-panel > div.field:last-of-type{margin-bottom:8px;}
+  .settings-panel{padding-bottom:2px;}
+  .settings-panel[open]{padding-bottom:16px;}
+
+  .main-tabs{
+    display:flex;
+    gap:2px;
+    margin-bottom:28px;
+    border-bottom:2px solid var(--line-strong);
+  }
+  .tab-btn{
+    flex:1;
+    background:none;
+    border:none;
+    border-bottom:3px solid transparent;
+    color:var(--paper-dim);
+    padding:12px 8px 14px;
+    cursor:pointer;
+    font-family:'Work Sans', sans-serif;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  .tab-btn .tab-name{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700;
+    font-size:15.5px;
+    color:var(--paper-dim);
+  }
+  .tab-btn .tab-hint{font-size:11px; color:var(--paper-dim); opacity:0.75;}
+  .tab-btn:nth-child(1):hover .tab-name, .tab-btn:nth-child(1).active .tab-name{color:var(--jade-light);}
+  .tab-btn:nth-child(2):hover .tab-name, .tab-btn:nth-child(2).active .tab-name{color:var(--crimson);}
+  .tab-btn:nth-child(3):hover .tab-name, .tab-btn:nth-child(3).active .tab-name{color:var(--gold);}
+  .tab-btn.active{border-bottom-color:currentColor;}
+  .tab-btn:nth-child(1).active{color:var(--jade-light);}
+  .tab-btn:nth-child(2).active{color:var(--crimson);}
+  .tab-btn:nth-child(3).active{color:var(--gold);}
+  .tab-btn.active .tab-hint{color:var(--paper);}
 </style>
 </head>
 <body>
@@ -396,18 +468,26 @@
 
   <header>
     <div class="brand">INKBOT <span>VIDEO</span></div>
+    <button type="button" class="settings-toggle" id="settingsToggle">Configuración</button>
   </header>
 
-  <div class="fase-tracker" id="faseTracker">
-    <div class="ft-item ft-unlocked" data-fase="1"><span class="ft-num">01</span><span class="ft-label">Guion</span></div>
-    <div class="ft-item ft-unlocked" data-fase="2"><span class="ft-num">02</span><span class="ft-label">Voz</span></div>
-    <div class="ft-item ft-unlocked" data-fase="3"><span class="ft-num">03</span><span class="ft-label">Video</span></div>
-    <div class="ft-item ft-unlocked" data-fase="4"><span class="ft-num">04</span><span class="ft-label">Momento</span></div>
-    <div class="ft-item ft-unlocked" data-fase="5"><span class="ft-num">05</span><span class="ft-label">Tendencias</span></div>
-    <div class="ft-item ft-current" data-fase="6"><span class="ft-num">06</span><span class="ft-label">Auditoría</span></div>
-    <div class="ft-item ft-future" data-fase="7"><span class="ft-num">07</span><span class="ft-label">Publicar</span></div>
-  </div>
+  <details id="settingsPanel" class="settings-panel">
+    <summary>API key de Anthropic</summary>
+    <p class="sub">Esta app corre fuera de Claude.ai (la abres desde GitHub), así que necesita tu propia clave para generar guion, tendencias y auditoría. Se guarda solo en este navegador, nunca sale de aquí ni se sube a GitHub.</p>
+    <div class="field">
+      <label>Tu API key de Anthropic (empieza con sk-ant-...)</label>
+      <input type="password" id="anthropicKey" placeholder="sk-ant-...">
+    </div>
+    <div class="status" id="anthropicKeyStatus"></div>
+  </details>
 
+  <nav class="main-tabs" id="mainTabs">
+    <button type="button" class="tab-btn" data-tab="trends"><span class="tab-name">Tendencias semanales</span><span class="tab-hint">Sonidos y hashtags de la semana</span></button>
+    <button type="button" class="tab-btn" data-tab="content"><span class="tab-name">Creación de contenido</span><span class="tab-hint">Guion, voz y video</span></button>
+    <button type="button" class="tab-btn" data-tab="audit"><span class="tab-name">Auditoría pública</span><span class="tab-hint">Tu cuenta vs. competencia</span></button>
+  </nav>
+
+  <div class="tab-panel" data-panel="trends" hidden>
   <section id="trendsSection">
     <h2>Tendencias de la semana</h2>
     <p class="sub">Sonidos y hashtags que están pegando ahora mismo en el nicho de tatuajes en Instagram y TikTok. Se busca sola una vez por semana y se usa como contexto extra al generar el guion — pulsa el botón si quieres forzar una actualización ahora.</p>
@@ -435,6 +515,15 @@
       </div>
     </div>
   </section>
+  </div>
+
+  <div class="tab-panel" data-panel="content" hidden>
+
+  <div class="fase-tracker" id="faseTracker">
+    <div class="ft-item ft-current" data-fase="1"><span class="ft-num">01</span><span class="ft-label">Guion</span></div>
+    <div class="ft-item ft-locked" data-fase="2"><span class="ft-num">02</span><span class="ft-label">Voz</span></div>
+    <div class="ft-item ft-locked" data-fase="3"><span class="ft-num">03</span><span class="ft-label">Video</span></div>
+  </div>
 
   <section>
     <h2>De qué va este video</h2>
@@ -459,43 +548,6 @@
   <button class="btn-main" id="generate">Generar guion</button>
   <div class="status" id="status"></div>
 
-  <div class="phase2" id="phase2Section">
-    <h2 style="margin-top:24px;">Fase 2 · Narración con voz</h2>
-    <p class="sub" id="phase2Locked">Genera tu guion arriba primero — esta sección se activa en cuanto lo tengas.</p>
-    <p class="sub" id="phase2Unlocked" style="display:none;">Usa tu clave de ElevenLabs para generar el audio de la narración con una voz real. Tu clave solo se usa aquí en tu navegador, en esta sesión — no se guarda en ningún lado.</p>
-
-    <div class="field">
-      <label>Tu API key de ElevenLabs</label>
-      <input type="password" id="elKey" placeholder="sk_..." disabled>
-    </div>
-    <div class="field">
-      <label>Voz</label>
-      <select id="elVoice" disabled>
-        <option>Carga tu clave y pulsa "Cargar voces"</option>
-      </select>
-    </div>
-    <button class="add-clip" id="loadVoices" disabled>Cargar voces</button>
-    <button class="btn-main" id="genNarration" style="margin-top:10px;" disabled>Generar narración</button>
-    <div class="status" id="narrStatus"></div>
-
-    <div id="narrClips"></div>
-    <button class="add-clip" id="downloadFull" style="display:none;">Descargar narración completa (un solo audio)</button>
-  </div>
-
-  <div class="phase2" id="phase3Section">
-    <h2 style="margin-top:24px;">Fase 3 · Ensamblado de video</h2>
-    <p class="sub" id="phase3Locked">Genera la narración en la Fase 2 primero — esta sección se activa en cuanto termine.</p>
-    <p class="sub" id="phase3Unlocked" style="display:none;">Sube el clip real de cada parte (en "Clip de referencia" arriba) y arma el video: la app detecta sola el momento con más movimiento en cada clip, lo recorta, mete la narración y el texto en pantalla, y une todo con transición. Formato vertical 9:16, salida en WebM.</p>
-
-    <div id="p3Clips"></div>
-    <button class="btn-main" id="assembleVideo" style="margin-top:10px;" disabled>Ensamblar video</button>
-    <div class="status" id="p3Status"></div>
-    <video id="p3Preview" controls style="width:100%; margin-top:14px; border-radius:3px; border:1px solid var(--line-strong); display:none;"></video>
-    <a class="add-clip" id="p3Download" style="display:none; text-align:center; text-decoration:none;" download="tattoo-video.webm">Descargar video</a>
-  </div>
-
-  <video id="p3VideoA" muted playsinline style="position:fixed; opacity:0; pointer-events:none; width:2px; height:2px; top:-9999px; left:-9999px;"></video>
-  <video id="p3VideoB" muted playsinline style="position:fixed; opacity:0; pointer-events:none; width:2px; height:2px; top:-9999px; left:-9999px;"></video>
   <div id="results" style="display:none;">
     <div class="hook">
       <div class="hook-label">Gancho (primeros 2 segundos)</div>
@@ -537,8 +589,54 @@
     <div class="tip-block" id="r-tip"></div>
   </div>
 
-  <div class="phase2" id="phase6Section">
-    <h2 style="margin-top:24px;">Fase 6 · Auditoría pública</h2>
+  <div class="phase2" id="phase2Section">
+    <h2>Narración con voz</h2>
+    <p class="sub" id="phase2Locked">Genera tu guion arriba primero — esta sección se activa en cuanto lo tengas.</p>
+    <p class="sub" id="phase2Unlocked" style="display:none;">Usa tu clave de ElevenLabs para generar el audio de la narración con una voz real. Tu clave solo se usa aquí en tu navegador, en esta sesión — no se guarda en ningún lado.</p>
+
+    <div class="field">
+      <label>Tu API key de ElevenLabs</label>
+      <input type="password" id="elKey" placeholder="sk_..." disabled>
+    </div>
+    <div class="field">
+      <label>Voz</label>
+      <select id="elVoice" disabled>
+        <option>Carga tu clave y pulsa "Cargar voces"</option>
+      </select>
+    </div>
+    <button class="add-clip" id="loadVoices" disabled>Cargar voces</button>
+    <button class="btn-main" id="genNarration" style="margin-top:10px;" disabled>Generar narración</button>
+    <div class="status" id="narrStatus"></div>
+
+    <div id="narrClips"></div>
+    <button class="add-clip" id="downloadFull" style="display:none;">Descargar narración completa (un solo audio)</button>
+  </div>
+
+  <div class="phase2" id="phase3Section">
+    <h2>Ensamblado de video</h2>
+    <p class="sub" id="phase3Locked">Genera la narración en la Fase 2 primero — esta sección se activa en cuanto termine.</p>
+    <p class="sub" id="phase3Unlocked" style="display:none;">Sube el clip real de cada parte (en "Clip de referencia" arriba) y arma el video: la app detecta sola el momento con más movimiento en cada clip, lo recorta, mete la narración y el texto en pantalla, y une todo con transición. Formato vertical 9:16, salida en WebM.</p>
+
+    <div id="p3Clips"></div>
+    <button class="btn-main" id="assembleVideo" style="margin-top:10px;" disabled>Ensamblar video</button>
+    <div class="status" id="p3Status"></div>
+    <video id="p3Preview" controls style="width:100%; margin-top:14px; border-radius:3px; border:1px solid var(--line-strong); display:none;"></video>
+    <a class="add-clip" id="p3Download" style="display:none; text-align:center; text-decoration:none;" download="tattoo-video.webm">Descargar video</a>
+  </div>
+
+  <video id="p3VideoA" muted playsinline style="position:fixed; opacity:0; pointer-events:none; width:2px; height:2px; top:-9999px; left:-9999px;"></video>
+  <video id="p3VideoB" muted playsinline style="position:fixed; opacity:0; pointer-events:none; width:2px; height:2px; top:-9999px; left:-9999px;"></video>
+
+  <details id="histDetails">
+    <summary>Guiones anteriores</summary>
+    <div id="histList"></div>
+  </details>
+
+  </div>
+
+  <div class="tab-panel" data-panel="audit" hidden>
+  <div id="phase6Section">
+    <h2>Auditoría pública</h2>
     <p class="sub">Analiza lo público de tu cuenta y de tu competencia por búsqueda web: bio, temas de contenido, frecuencia y patrones. No incluye métricas privadas (impresiones, alcance, comentarios reales) porque Instagram no las expone fuera de tu propia cuenta autenticada — donde falte un dato público, la app lo dice en vez de inventarlo.</p>
 
     <div class="field">
@@ -571,23 +669,19 @@
       <ul id="auditImprovements" class="audit-list"></ul>
     </div>
   </div>
+  </div>
 
-  <details id="histDetails">
-    <summary>Guiones anteriores</summary>
-    <div id="histList"></div>
-  </details>
-
-  <div class="roadmap">
-    <h2>Las siguientes fases</h2>
+  <details class="roadmap">
+    <summary>Hoja de ruta</summary>
     <div class="rm-item"><span class="rm-num">01</span><span>Guion: narración, captions, hashtags y calendario a partir de tus clips descritos.</span></div>
     <div class="rm-item"><span class="rm-num">02</span><span>Voz narrada automática: convertir el guion en audio con una voz elegida, ya cronometrado por clip.</span></div>
     <div class="rm-item"><span class="rm-num">03</span><span>Ensamblado automático de video: subir los clips y que la app los corte, una con la narración y agregue el texto en pantalla.</span></div>
 
     <div class="rm-item"><span class="rm-num">04</span><span>Selección inteligente del mejor momento dentro de cada clip crudo, sin marcarlo tú a mano.</span></div>
     <div class="rm-item"><span class="rm-num">05</span><span>Tendencias: búsqueda semanal de sonidos y hashtags que están pegando en el nicho tattoo, para alimentar el gancho.</span></div>
-    <div class="rm-item rm-current"><span class="rm-num">06</span><span>Auditoría pública: análisis de tu cuenta y competencia por búsqueda web — patrones, sentimiento público y mejoras — esto es lo que estás usando ahora.</span></div>
+    <div class="rm-item"><span class="rm-num">06</span><span>Auditoría pública: análisis de tu cuenta y competencia por búsqueda web — patrones, sentimiento público y mejoras.</span></div>
     <div class="rm-item"><span class="rm-num">07</span><span>Publicación directa: programar y publicar a Instagram y TikTok sin salir de la app.</span></div>
-  </div>
+  </details>
 
 </div>
 
@@ -668,6 +762,13 @@ async function loadTrends(){
 async function fetchTrends(){
   const btn = document.getElementById('refreshTrends');
   const statusEl = document.getElementById('trendsStatus');
+
+  const setTrendsStatus = (msg, isErr=false)=>{
+    statusEl.textContent = msg;
+    statusEl.className = 'status' + (isErr ? ' err' : '');
+  };
+  if(!requireAnthropicKey(setTrendsStatus)) return;
+
   btn.disabled = true;
   statusEl.textContent = 'Buscando qué está pegando esta semana en el nicho tattoo...';
   statusEl.className = 'status';
@@ -675,7 +776,7 @@ async function fetchTrends(){
   try{
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: anthropicHeaders(),
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 1200,
@@ -688,6 +789,9 @@ Incluye entre 3 y 6 sonidos. Basa todo en resultados reales de tu búsqueda — 
     });
 
     const data = await response.json();
+    if(!response.ok){
+      throw new Error(data?.error?.message || `Error ${response.status} al llamar a Anthropic. Revisa tu API key.`);
+    }
     const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
     const clean = raw.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
@@ -699,7 +803,7 @@ Incluye entre 3 y 6 sonidos. Basa todo en resultados reales de tu búsqueda — 
     statusEl.textContent = 'Tendencias actualizadas.';
   } catch(err){
     console.error(err);
-    statusEl.textContent = 'No se pudieron buscar las tendencias. Intenta de nuevo.';
+    statusEl.textContent = err.message || 'No se pudieron buscar las tendencias. Intenta de nuevo.';
     statusEl.className = 'status err';
   } finally {
     btn.disabled = false;
@@ -742,6 +846,80 @@ document.getElementById('addClip').addEventListener('click', ()=>addClipRow());
 addClipRow('Pegado de la plantilla','Limpio la piel y transfiero el diseño de la sirena, se ve el papel carbón despegándose y el contorno ya marcado sobre la piel.');
 addClipRow('Tatuando','Estoy pasando la máquina sobre las líneas del contorno, se ve el detalle del trazo y los colores crimson y jade que voy metiendo.');
 
+// ---------- Navegación por pestañas ----------
+(function initTabs(){
+  const TAB_STORAGE = 'inkbot_video_active_tab';
+  const btns = Array.from(document.querySelectorAll('.tab-btn'));
+  const panels = Array.from(document.querySelectorAll('.tab-panel'));
+
+  function activate(tabName){
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
+    panels.forEach(p => { p.hidden = p.dataset.panel !== tabName; });
+    try{ localStorage.setItem(TAB_STORAGE, tabName); }catch(e){}
+  }
+
+  btns.forEach(b => b.addEventListener('click', ()=>activate(b.dataset.tab)));
+
+  let initial = 'content';
+  try{
+    const saved = localStorage.getItem(TAB_STORAGE);
+    if(saved && panels.some(p => p.dataset.panel === saved)) initial = saved;
+  }catch(e){}
+  activate(initial);
+})();
+
+// ---------- Panel de configuración (API key) ----------
+document.getElementById('settingsToggle').addEventListener('click', ()=>{
+  const panel = document.getElementById('settingsPanel');
+  panel.open = !panel.open;
+  if(panel.open) panel.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+// ---------- API key de Anthropic (persistida en localStorage) ----------
+const ANTHROPIC_KEY_STORAGE = 'inkbot_video_anthropic_key';
+
+(function initAnthropicKey(){
+  const input = document.getElementById('anthropicKey');
+  const panel = document.getElementById('settingsPanel');
+  const saved = localStorage.getItem(ANTHROPIC_KEY_STORAGE);
+  if(saved){
+    input.value = saved;
+  } else {
+    panel.open = true; // sin clave guardada: se muestra abierta desde el inicio
+  }
+  input.addEventListener('change', ()=>{
+    const val = input.value.trim();
+    if(val) localStorage.setItem(ANTHROPIC_KEY_STORAGE, val);
+    else localStorage.removeItem(ANTHROPIC_KEY_STORAGE);
+  });
+})();
+
+function getAnthropicKey(){
+  const input = document.getElementById('anthropicKey');
+  return (input && input.value.trim()) || '';
+}
+
+function anthropicHeaders(){
+  return {
+    "Content-Type": "application/json",
+    "x-api-key": getAnthropicKey(),
+    "anthropic-version": "2023-06-01",
+    "anthropic-dangerous-direct-browser-access": "true"
+  };
+}
+
+function requireAnthropicKey(statusSetter){
+  const key = getAnthropicKey();
+  if(!key){
+    statusSetter('Pega tu API key de Anthropic en Configuración primero.', true);
+    const panel = document.getElementById('settingsPanel');
+    panel.open = true;
+    panel.scrollIntoView({behavior:'smooth', block:'start'});
+    return false;
+  }
+  return true;
+}
+
 function setStatus(msg, isErr=false){
   const s = document.getElementById('status');
   s.textContent = msg;
@@ -763,6 +941,7 @@ async function generate(){
   }));
 
   if(clips.some(c => !c.descripcion)){ setStatus('Describe qué muestra cada clip.', true); return; }
+  if(!requireAnthropicKey(setStatus)) return;
 
   const btn = document.getElementById('generate');
   btn.disabled = true;
@@ -781,7 +960,7 @@ async function generate(){
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: anthropicHeaders(),
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 1000,
@@ -798,6 +977,9 @@ Escribe todo en español, en la voz de un tatuador auténtico, no de marketer. S
     });
 
     const data = await response.json();
+    if(!response.ok){
+      throw new Error(data?.error?.message || `Error ${response.status} al llamar a Anthropic. Revisa tu API key.`);
+    }
     const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
     const clean = raw.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
@@ -807,7 +989,7 @@ Escribe todo en español, en la voz de un tatuador auténtico, no de marketer. S
     setStatus('Listo.');
   } catch(err){
     console.error(err);
-    setStatus('No se pudo generar el guion. Intenta de nuevo.', true);
+    setStatus(err.message || 'No se pudo generar el guion. Intenta de nuevo.', true);
   } finally {
     btn.disabled = false;
   }
@@ -1111,10 +1293,8 @@ function unlockPhase3(){
 
   const t2 = document.querySelector('.ft-item[data-fase="2"]');
   const t3 = document.querySelector('.ft-item[data-fase="3"]');
-  const t4 = document.querySelector('.ft-item[data-fase="4"]');
   t2.className = 'ft-item ft-unlocked';
-  t3.className = 'ft-item ft-unlocked';
-  t4.className = 'ft-item ft-current';
+  t3.className = 'ft-item ft-current';
 
   renderPhase3Clips();
 }
@@ -1486,6 +1666,12 @@ async function runAudit(){
     return;
   }
 
+  const setAuditStatus = (msg, isErr=false)=>{
+    statusEl.textContent = msg;
+    statusEl.className = 'status' + (isErr ? ' err' : '');
+  };
+  if(!requireAnthropicKey(setAuditStatus)) return;
+
   btn.disabled = true;
   statusEl.textContent = 'Buscando lo público de estas cuentas...';
   statusEl.className = 'status';
@@ -1495,7 +1681,7 @@ async function runAudit(){
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: anthropicHeaders(),
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 1800,
@@ -1511,6 +1697,9 @@ Responde EXCLUSIVAMENTE un objeto JSON, sin texto adicional, sin markdown, sin b
     });
 
     const data = await response.json();
+    if(!response.ok){
+      throw new Error(data?.error?.message || `Error ${response.status} al llamar a Anthropic. Revisa tu API key.`);
+    }
     const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
     const clean = raw.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
@@ -1521,7 +1710,7 @@ Responde EXCLUSIVAMENTE un objeto JSON, sin texto adicional, sin markdown, sin b
     statusEl.textContent = 'Listo.';
   } catch(err){
     console.error(err);
-    statusEl.textContent = 'No se pudo completar el análisis. Intenta de nuevo.';
+    statusEl.textContent = err.message || 'No se pudo completar el análisis. Intenta de nuevo.';
     statusEl.className = 'status err';
   } finally {
     btn.disabled = false;
