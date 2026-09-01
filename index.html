@@ -1645,12 +1645,25 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
   document.getElementById('p3Preview').style.display = 'none';
   document.getElementById('p3Download').style.display = 'none';
 
+  let canvasEl = null; // referencia para poder quitarlo del DOM al terminar (éxito o error)
+
   try{
     await document.fonts.ready;
 
     const CW = 720, CH = 1280;
     const canvas = document.createElement('canvas');
     canvas.width = CW; canvas.height = CH;
+    // El canvas debe estar insertado en el documento (aunque quede oculto) para que
+    // captureStream() produzca fotogramas de forma confiable en todos los navegadores.
+    // Un canvas nunca adjuntado al DOM es la causa más común de un WebM que sale con
+    // 0 bytes de video real (solo el encabezado del contenedor, sin Cluster).
+    canvas.style.position = 'fixed';
+    canvas.style.left = '-9999px';
+    canvas.style.top = '-9999px';
+    canvas.style.opacity = '0';
+    canvas.style.pointerEvents = 'none';
+    document.body.appendChild(canvas);
+    canvasEl = canvas;
     const ctx = canvas.getContext('2d');
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1661,11 +1674,14 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     let mimeType = 'video/webm;codecs=vp9,opus';
     if(!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
     const recorder = new MediaRecorder(combined, { mimeType });
+    let recorderError = null;
+    recorder.onerror = (e) => { recorderError = (e && e.error) || new Error('Error desconocido de MediaRecorder'); };
+    let totalBytes = 0;
     const chunks = [];
-    recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+    recorder.ondataavailable = e => { if(e.data.size > 0){ chunks.push(e.data); totalBytes += e.data.size; } };
 
     const finished = new Promise(resolve => { recorder.onstop = resolve; });
-    recorder.start();
+    recorder.start(250); // flush cada 250ms en vez de solo al final
 
     const blend = {
       mode:'single', a:null, b:null, alpha:0, text:'', textT0:0,
@@ -1795,6 +1811,17 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     recorder.stop();
     await finished;
 
+    if(recorderError){
+      throw new Error('Falló la grabación del video: ' + (recorderError.message || recorderError));
+    }
+    // Un WebM real de unos segundos pesa como mínimo varias decenas de KB. Si sale
+    // muchísimo más chico que eso, es que el canvas no emitió fotogramas reales
+    // (grabación vacía) — mejor avisar claro que entregar un archivo roto disfrazado
+    // de "listo".
+    if(totalBytes < 15000){
+      throw new Error(`La grabación no capturó video real (solo ${totalBytes} bytes). El canvas no está emitiendo fotogramas en este navegador/entorno. Intenta de nuevo — si se repite, prueba en otro navegador (Chrome de escritorio es el más confiable para esto).`);
+    }
+
     const rawBlob = new Blob(chunks, { type: mimeType });
     p3Status.textContent = 'Reparando metadatos del archivo...';
     let blob;
@@ -1820,6 +1847,7 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     p3Status.className = 'status err';
   } finally {
     btn.disabled = false;
+    if(canvasEl && canvasEl.parentNode) canvasEl.parentNode.removeChild(canvasEl);
   }
 });
 // ---------- Fase 6: Auditoría pública ----------
