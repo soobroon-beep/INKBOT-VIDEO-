@@ -686,6 +686,19 @@
 </div>
 
 <script>
+// ---------- Almacenamiento local (reemplaza window.storage, que solo existe dentro de Claude.ai) ----------
+const localStore = {
+  async get(key){
+    const raw = localStorage.getItem('inkbot_video_' + key);
+    if(raw === null) return null;
+    return { key, value: raw };
+  },
+  async set(key, value){
+    localStorage.setItem('inkbot_video_' + key, value);
+    return { key, value };
+  }
+};
+
 let clipCount = 0;
 
 function addClipRow(label='', desc=''){
@@ -919,19 +932,6 @@ function requireAnthropicKey(statusSetter){
   }
   return true;
 }
-
-// ---------- Almacenamiento local (reemplaza window.storage, que solo existe dentro de Claude.ai) ----------
-const localStore = {
-  async get(key){
-    const raw = localStorage.getItem('inkbot_video_' + key);
-    if(raw === null) return null;
-    return { key, value: raw };
-  },
-  async set(key, value){
-    localStorage.setItem('inkbot_video_' + key, value);
-    return { key, value };
-  }
-};
 
 function setStatus(msg, isErr=false){
   const s = document.getElementById('status');
