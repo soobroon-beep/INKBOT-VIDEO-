@@ -6,6 +6,7 @@
 <title>INKBOT VIDEO — Fase 1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;900&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/fix-webm-duration"></script>
 <style>
   :root{
     --ink:#120f0e;
@@ -462,7 +463,6 @@
   .tab-btn:nth-child(3).active{color:var(--gold);}
   .tab-btn.active .tab-hint{color:var(--paper);}
 </style>
-<script src="https://unpkg.com/fix-webm-duration@1.0.6/fix-webm-duration.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1335,49 +1335,43 @@ function renderPhase3Clips(){
   });
 }
 
-function drawCover(ctx, video, cw, ch, zoom=1){
+function drawCover(ctx, video, cw, ch, progress = 0){
   const vw = video.videoWidth, vh = video.videoHeight;
   if(!vw || !vh) return;
-  const scale = Math.max(cw/vw, ch/vh) * zoom;
+  const baseScale = Math.max(cw/vw, ch/vh);
+  // Animación tipo Ken Burns: ligero zoom de hasta +8% durante el clip
+  const scale = baseScale * (1 + (0.08 * progress));
   const dw = vw*scale, dh = vh*scale;
   ctx.drawImage(video, (cw-dw)/2, (ch-dh)/2, dw, dh);
 }
 
-function drawOverlay(ctx, cw, ch, text, progress=1){
+function drawOverlay(ctx, cw, ch, text, progress = 1){
   if(!text) return;
-  const p = Math.max(0, Math.min(1, progress));
-  const eased = 1 - Math.pow(1-p, 3);
-  ctx.save();
-  ctx.globalAlpha = eased;
   ctx.font = "600 34px 'Big Shoulders Display', sans-serif";
   ctx.textAlign = 'center';
-  const y = ch * 0.82 + (1-eased)*28;
   const metrics = ctx.measureText(text.toUpperCase());
   const pad = 20;
-  ctx.fillStyle = 'rgba(18,15,14,0.78)';
+  
+  // Animación de entrada: fade y desplazamiento en el primer 15% del clip
+  const intro = Math.min(1, progress / 0.15); 
+  const yOffset = (1 - intro) * 20; 
+  
+  const y = ch * 0.82 + yOffset;
+
+  ctx.globalAlpha = intro;
+  ctx.fillStyle = 'rgba(18,15,14,0.72)';
   ctx.fillRect(cw/2 - metrics.width/2 - pad, y - 38, metrics.width + pad*2, 52);
   ctx.fillStyle = '#c79a3d';
   ctx.fillText(text.toUpperCase(), cw/2, y - 2);
-  ctx.restore();
+  ctx.globalAlpha = 1;
 }
 
 function drawVignette(ctx, cw, ch){
-  const g = ctx.createRadialGradient(cw/2, ch/2, Math.min(cw,ch)*0.30, cw/2, ch/2, Math.max(cw,ch)*0.72);
-  g.addColorStop(0, 'rgba(0,0,0,0)');
-  g.addColorStop(0.72, 'rgba(0,0,0,0.04)');
-  g.addColorStop(1, 'rgba(0,0,0,0.34)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,cw,ch);
-}
-
-// Reparación robusta de WebM generado por MediaRecorder.
-// La librería recalcula/reconstruye la metadata EBML necesaria en vez de
-// insertar Duration a mano, evitando romper SeekHead/Cues y el playback.
-async function fixWebmDuration(blob, durationSec){
-  if(typeof window.ysFixWebmDuration !== 'function'){
-    throw new Error('No se pudo cargar el reparador WebM. Comprueba la conexión a Internet y vuelve a intentarlo.');
-  }
-  return await window.ysFixWebmDuration(blob, Math.max(1, durationSec * 1000), { logger: false });
+  const gradient = ctx.createRadialGradient(cw/2, ch/2, Math.max(cw,ch)*0.2, cw/2, ch/2, Math.max(cw,ch)*0.7);
+  gradient.addColorStop(0, 'rgba(0,0,0,0)');
+  gradient.addColorStop(1, 'rgba(0,0,0,0.5)'); // Oscurecimiento en los bordes
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, cw, ch);
 }
 
 function seekTo(video, t){
@@ -1537,31 +1531,33 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
 
     const finished = new Promise(resolve => { recorder.onstop = resolve; });
+    const startRecordingTime = performance.now();
     recorder.start();
-    const recordingStart = performance.now();
 
-    const blend = { mode:'single', a:null, b:null, alpha:0, text:'', effectStart:performance.now(), clipDuration:4, textStart:performance.now() };
+    const blend = { mode:'single', a:null, b:null, alpha:0, text:'', startA:0, durA:1, startB:0, durB:1 };
     let drawing = true;
 
     function drawLoop(){
       if(!drawing) return;
       ctx.fillStyle = '#120f0e';
       ctx.fillRect(0,0,CW,CH);
-      const effectElapsed = (performance.now() - blend.effectStart) / 1000;
-      const zoomProgress = Math.min(1, effectElapsed / Math.max(0.1, blend.clipDuration));
-      const zoom = 1 + 0.045 * zoomProgress;
-      const textProgress = Math.min(1, (performance.now() - blend.textStart) / 0.32);
+      
+      let progA = (blend.a && blend.durA > 0) ? Math.max(0, Math.min(1, (blend.a.currentTime - blend.startA) / blend.durA)) : 0;
+      let progB = (blend.b && blend.durB > 0) ? Math.max(0, Math.min(1, (blend.b.currentTime - blend.startB) / blend.durB)) : 0;
+
       if(blend.mode === 'single' && blend.a){
-        drawCover(ctx, blend.a, CW, CH, zoom);
+        drawCover(ctx, blend.a, CW, CH, progA);
       } else if(blend.mode === 'cross'){
         ctx.globalAlpha = 1 - blend.alpha;
-        drawCover(ctx, blend.a, CW, CH, zoom);
+        drawCover(ctx, blend.a, CW, CH, progA);
         ctx.globalAlpha = blend.alpha;
-        drawCover(ctx, blend.b, CW, CH, 1 + 0.045 * blend.alpha);
+        drawCover(ctx, blend.b, CW, CH, progB);
         ctx.globalAlpha = 1;
       }
+      
+      drawOverlay(ctx, CW, CH, blend.text, progA);
       drawVignette(ctx, CW, CH);
-      drawOverlay(ctx, CW, CH, blend.text, textProgress);
+      
       requestAnimationFrame(drawLoop);
     }
     drawLoop();
@@ -1569,7 +1565,7 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     const videoA = document.getElementById('p3VideoA');
     const videoB = document.getElementById('p3VideoB');
     const pool = [videoA, videoB];
-    const TRANSITION = 0.22; // transición rápida y punchy
+    const TRANSITION = 0.2; // Transición reducida a 200ms (más punchy)
 
     // precarga el primer clip y detecta su mejor momento
     await loadClipInto(pool[0], plan[0].file);
@@ -1595,10 +1591,9 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
 
       blend.mode = 'single';
       blend.a = cur;
+      blend.startA = segmentStart;
+      blend.durA = targetDuration;
       blend.text = p.clip.texto_pantalla || '';
-      blend.effectStart = performance.now();
-      blend.textStart = performance.now();
-      blend.clipDuration = targetDuration;
 
       let audioDone = Promise.resolve();
       if(p.narrationBuffer){
@@ -1624,9 +1619,6 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
 
         await next.play();
         blend.text = plan[i+1].clip.texto_pantalla || '';
-        blend.effectStart = performance.now();
-        blend.textStart = performance.now();
-        blend.clipDuration = plan[i+1].targetDuration;
 
         await new Promise(res=>{
           const t0 = performance.now();
@@ -1635,6 +1627,8 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
             const prog = Math.min(1, elapsed / TRANSITION);
             blend.mode = 'cross';
             blend.a = cur; blend.b = next; blend.alpha = prog;
+            blend.startB = plan[i+1].segmentStart; 
+            blend.durB = plan[i+1].targetDuration;
             if(prog < 1) requestAnimationFrame(step); else res();
           }
           step();
@@ -1651,20 +1645,29 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     drawing = false;
     recorder.stop();
     await finished;
+    const durationMs = performance.now() - startRecordingTime;
 
-    const rawBlob = new Blob(chunks, { type: 'video/webm' });
-    const recordedDuration = Math.max(0.05, (performance.now() - recordingStart) / 1000);
-    p3Status.textContent = 'Reparando metadatos de duración...';
-    const blob = await fixWebmDuration(rawBlob, recordedDuration);
-    const url = URL.createObjectURL(blob);
-    const preview = document.getElementById('p3Preview');
-    preview.src = url;
-    preview.style.display = 'block';
-    const dl = document.getElementById('p3Download');
-    dl.href = url;
-    dl.style.display = 'block';
+    const buggedBlob = new Blob(chunks, { type: 'video/webm' });
 
-    p3Status.textContent = `Video listo · ${recordedDuration.toFixed(1)} s`;
+    const finishSetup = (finalBlob) => {
+      const url = URL.createObjectURL(finalBlob);
+      const preview = document.getElementById('p3Preview');
+      preview.src = url;
+      preview.style.display = 'block';
+      const dl = document.getElementById('p3Download');
+      dl.href = url;
+      dl.style.display = 'block';
+      p3Status.textContent = 'Video listo.';
+    };
+
+    // Reparación de los metadatos WebM para evitar la duración de "0s"
+    if (window.ysFixWebmDuration) {
+      ysFixWebmDuration(buggedBlob, durationMs, finishSetup);
+    } else {
+      // Porcentaje muy remoto: en caso de que falle cargar el script CDN, usará el normal
+      finishSetup(buggedBlob);
+    }
+
   } catch(err){
     console.error(err);
     p3Status.textContent = (err && err.message) ? err.message : 'Algo falló armando el video. Revisa que los clips hayan cargado bien e intenta de nuevo.';
@@ -1673,6 +1676,7 @@ document.getElementById('assembleVideo').addEventListener('click', async ()=>{
     btn.disabled = false;
   }
 });
+
 // ---------- Fase 6: Auditoría pública ----------
 let competitorCount = 0;
 
