@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INKBOT VIDEO — Fase 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;900&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#120f0e;
+    --ink-2:#1c1817;
+    --paper:#ede7dd;
+    --paper-dim:#a89f90;
+    --crimson:#b21e35;
+    --crimson-dim:#7a1526;
+    --gold:#c79a3d;
+    --jade:#2e6b58;
+    --jade-light:#4c8b76;
+    --line: rgba(237,231,221,0.14);
+    --line-strong: rgba(237,231,221,0.28);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Work Sans', sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:28px 18px 60px;
+  }
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:2px solid var(--line-strong);
+    padding-bottom:16px;
+    margin-bottom:24px;
+  }
+  .brand{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:28px;
+    letter-spacing:0.02em;
+    color:var(--paper);
+  }
+  .brand span{color:var(--crimson);}
+  .phase-tag{
+    font-size:12px;
+    color:var(--gold);
+    border:1px solid var(--gold);
+    border-radius:2px;
+    padding:3px 8px;
+    white-space:nowrap;
+  }
+  h2{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700;
+    font-size:20px;
+    margin:0 0 4px;
+    color:var(--paper);
+  }
+  .sub{
+    color:var(--paper-dim);
+    font-size:13.5px;
+    margin:0 0 16px;
+  }
+  section{margin-bottom:32px;}
+  label{
+    display:block;
+    font-size:13px;
+    color:var(--gold);
+    margin-bottom:6px;
+  }
+  input[type=text], textarea{
+    width:100%;
+    background:var(--ink-2);
+    border:1px solid var(--line-strong);
+    color:var(--paper);
+    border-radius:3px;
+    padding:11px 12px;
+    font-family:'Work Sans', sans-serif;
+    font-size:15px;
+    resize:vertical;
+  }
+  input[type=text]:focus, textarea:focus{
+    outline:none;
+    border-color:var(--jade-light);
+  }
+  textarea{min-height:64px;}
+  .field{margin-bottom:14px;}
+  .clip{
+    position:relative;
+    border:1px solid var(--line);
+    border-left:3px solid var(--jade);
+    border-radius:3px;
+    padding:14px 14px 8px;
+    margin-bottom:12px;
+    background:rgba(237,231,221,0.02);
+  }
+  .clip-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .clip-num{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:22px;
+    color:var(--jade-light);
+  }
+  .remove-clip{
+    background:none;
+    border:none;
+    color:var(--paper-dim);
+    font-size:13px;
+    cursor:pointer;
+    padding:4px 8px;
+  }
+  .remove-clip:hover{color:var(--crimson);}
+  .add-clip{
+    width:100%;
+    background:none;
+    border:1px dashed var(--line-strong);
+    color:var(--paper-dim);
+    border-radius:3px;
+    padding:12px;
+    font-size:14px;
+    cursor:pointer;
+    font-family:'Work Sans', sans-serif;
+  }
+  .add-clip:hover{border-color:var(--gold); color:var(--gold);}
+  .btn-main{
+    width:100%;
+    background:var(--crimson);
+    color:var(--paper);
+    border:none;
+    border-radius:3px;
+    padding:15px;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700;
+    font-size:18px;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .btn-main:hover{background:var(--crimson-dim);}
+  .btn-main:disabled{background:var(--ink-2); color:var(--paper-dim); cursor:default;}
+  .status{
+    font-size:13px;
+    color:var(--gold);
+    margin-top:10px;
+    min-height:16px;
+  }
+  .status.err{color:var(--crimson);}
+  #results{display:none;}
+  .hook{
+    border:1px solid var(--gold);
+    border-radius:3px;
+    padding:14px;
+    margin-bottom:20px;
+  }
+  .hook-label{font-size:12px; color:var(--gold); margin-bottom:6px;}
+  .hook-text{font-size:16px; font-weight:500;}
+  .result-clip{
+    display:flex;
+    gap:12px;
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .result-num{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:26px;
+    color:var(--jade-light);
+    min-width:32px;
+  }
+  .result-body .rc-label{font-size:12.5px; color:var(--paper-dim); margin-bottom:4px;}
+  .result-body .rc-narr{font-size:15px; margin-bottom:6px;}
+  .result-body .rc-onscreen{
+    display:inline-block;
+    font-size:12.5px;
+    color:var(--gold);
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:2px 7px;
+  }
+  .copy-block{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:14px;
+    margin-bottom:14px;
+    position:relative;
+  }
+  .copy-block .cb-label{font-size:12px; color:var(--gold); margin-bottom:8px;}
+  .copy-block p{margin:0; font-size:14.5px; white-space:pre-wrap;}
+  .copy-btn{
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:none;
+    border:1px solid var(--line-strong);
+    color:var(--paper-dim);
+    border-radius:2px;
+    padding:5px 10px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{border-color:var(--jade-light); color:var(--jade-light);}
+  .hashtags{display:flex; flex-wrap:wrap; gap:6px;}
+  .tag{
+    font-size:13px;
+    color:var(--jade-light);
+    border:1px solid var(--jade);
+    border-radius:20px;
+    padding:4px 11px;
+  }
+  .schedule{
+    display:flex;
+    gap:14px;
+    align-items:baseline;
+    flex-wrap:wrap;
+  }
+  .schedule .big{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:24px;
+    color:var(--paper);
+  }
+  .schedule .why{font-size:13px; color:var(--paper-dim); flex-basis:100%;}
+  .tip-block{
+    border-left:3px solid var(--crimson);
+    padding:4px 0 4px 14px;
+    font-size:14.5px;
+  }
+  details{
+    margin-top:28px;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+  summary{
+    cursor:pointer;
+    color:var(--paper-dim);
+    font-size:13.5px;
+  }
+  .hist-item{
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    font-size:13.5px;
+  }
+  .hist-item:hover{color:var(--gold);}
+  .hist-item .hd{color:var(--paper-dim); font-size:12px;}
+  .p3-clip{
+    border:1px solid var(--line);
+    border-left:3px solid var(--crimson);
+    border-radius:3px;
+    padding:12px 14px;
+    margin-bottom:10px;
+  }
+  .p3-clip .p3-label{font-size:13px; margin-bottom:8px;}
+  .p3-clip .p3-file-status{font-size:12px; color:var(--paper-dim); margin-bottom:8px;}
+  .p3-clip .p3-file-status.ok{color:var(--jade-light);}
+  .p3-trim{display:flex; gap:10px;}
+  .p3-trim div{flex:1;}
+  .p3-trim label{font-size:11.5px;}
+  .p3-trim input{padding:8px 10px; font-size:13.5px;}
+  .fase-tracker{
+    display:flex;
+    gap:6px;
+    margin-bottom:28px;
+    overflow-x:auto;
+    padding-bottom:4px;
+  }
+  .ft-item{
+    flex:1 0 auto;
+    min-width:70px;
+    text-align:center;
+    padding:8px 4px;
+    border-radius:2px;
+    border:1px solid var(--line);
+  }
+  .ft-num{
+    display:block;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:16px;
+  }
+  .ft-label{display:block; font-size:10.5px; margin-top:1px;}
+  .ft-current{border-color:var(--crimson); background:rgba(178,30,53,0.12);}
+  .ft-current .ft-num{color:var(--crimson);}
+  .ft-current .ft-label{color:var(--paper);}
+  .ft-unlocked{border-color:var(--jade-light);}
+  .ft-unlocked .ft-num{color:var(--jade-light);}
+  .ft-unlocked .ft-label{color:var(--paper-dim);}
+  .ft-locked, .ft-future{opacity:0.4;}
+  .ft-locked .ft-num, .ft-future .ft-num{color:var(--paper-dim);}
+  .ft-locked .ft-label, .ft-future .ft-label{color:var(--paper-dim);}
+  .phase2{border-top:1px solid var(--line-strong); padding-top:20px; margin-top:8px;}
+  select{
+    width:100%;
+    background:var(--ink-2);
+    border:1px solid var(--line-strong);
+    color:var(--paper);
+    border-radius:3px;
+    padding:11px 12px;
+    font-family:'Work Sans', sans-serif;
+    font-size:15px;
+  }
+  .narr-clip{
+    border:1px solid var(--line);
+    border-left:3px solid var(--gold);
+    border-radius:3px;
+    padding:12px 14px;
+    margin-bottom:10px;
+  }
+  .narr-clip .nc-label{font-size:12.5px; color:var(--paper-dim); margin-bottom:8px;}
+  .narr-clip audio{width:100%; height:34px;}
+  .narr-clip a.dl{
+    display:inline-block;
+    margin-top:8px;
+    font-size:12.5px;
+    color:var(--jade-light);
+    text-decoration:none;
+    border:1px solid var(--jade);
+    border-radius:2px;
+    padding:4px 10px;
+  }
+  .trends-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+  .trends-updated{font-size:12px; color:var(--paper-dim);}
+  #refreshTrends{width:auto; padding:9px 14px; font-size:13px;}
+  .trend-block{margin-bottom:16px;}
+  .trend-label{font-size:12px; color:var(--gold); margin-bottom:8px;}
+  .trend-text{font-size:14.5px; margin:0;}
+  .trend-sound{
+    border:1px solid var(--line);
+    border-left:3px solid var(--jade);
+    border-radius:3px;
+    padding:9px 12px;
+    margin-bottom:8px;
+  }
+  .trend-sound .ts-name{font-size:14px; font-weight:500;}
+  .trend-sound .ts-use{font-size:12.5px; color:var(--paper-dim); margin-top:2px;}
+  .audit-list{margin:0; padding-left:18px; font-size:14.5px;}
+  .audit-list li{margin-bottom:8px;}
+  .audit-account{
+    border:1px solid var(--line);
+    border-left:3px solid var(--gold);
+    border-radius:3px;
+    padding:10px 12px;
+    margin-bottom:8px;
+  }
+  .audit-account .aa-user{font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:15px;}
+  .audit-account .aa-role{font-size:11px; color:var(--paper-dim); margin-bottom:6px;}
+  .audit-account .aa-row{font-size:13px; margin-top:3px;}
+  .audit-account .aa-source{font-size:11.5px; color:var(--paper-dim); margin-top:6px; font-style:italic;}
+  .competitor-row{display:flex; gap:8px; margin-bottom:8px;}
+  .competitor-row input{flex:1;}
+  .competitor-row button{
+    background:none;
+    border:1px solid var(--line-strong);
+    color:var(--paper-dim);
+    border-radius:3px;
+    padding:0 12px;
+    cursor:pointer;
+    font-size:13px;
+    font-family:'Work Sans', sans-serif;
+  }
+  .competitor-row button:hover{border-color:var(--crimson); color:var(--crimson);}
+  .roadmap{
+    margin-top:36px;
+    border-top:1px solid var(--line-strong);
+    padding-top:18px;
+  }
+  .rm-item{display:flex; gap:12px; padding:8px 0; font-size:13.5px; color:var(--paper-dim);}
+  .rm-num{color:var(--gold); font-family:'Big Shoulders Display'; font-weight:700; min-width:20px;}
+  .rm-current{color:var(--paper);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">INKBOT <span>VIDEO</span></div>
+  </header>
+
+  <div class="fase-tracker" id="faseTracker">
+    <div class="ft-item ft-unlocked" data-fase="1"><span class="ft-num">01</span><span class="ft-label">Guion</span></div>
+    <div class="ft-item ft-unlocked" data-fase="2"><span class="ft-num">02</span><span class="ft-label">Voz</span></div>
+    <div class="ft-item ft-unlocked" data-fase="3"><span class="ft-num">03</span><span class="ft-label">Video</span></div>
+    <div class="ft-item ft-unlocked" data-fase="4"><span class="ft-num">04</span><span class="ft-label">Momento</span></div>
+    <div class="ft-item ft-unlocked" data-fase="5"><span class="ft-num">05</span><span class="ft-label">Tendencias</span></div>
+    <div class="ft-item ft-current" data-fase="6"><span class="ft-num">06</span><span class="ft-label">Auditoría</span></div>
+    <div class="ft-item ft-future" data-fase="7"><span class="ft-num">07</span><span class="ft-label">Publicar</span></div>
+  </div>
+
+  <section id="trendsSection">
+    <h2>Tendencias de la semana</h2>
+    <p class="sub">Sonidos y hashtags que están pegando ahora mismo en el nicho de tatuajes en Instagram y TikTok. Se busca sola una vez por semana y se usa como contexto extra al generar el guion — pulsa el botón si quieres forzar una actualización ahora.</p>
+    <div class="trends-head">
+      <span class="trends-updated" id="trendsUpdated"></span>
+      <button class="add-clip" id="refreshTrends">Actualizar tendencias</button>
+    </div>
+    <div class="status" id="trendsStatus"></div>
+    <div id="trendsResult" style="display:none;">
+      <div class="trend-block">
+        <div class="trend-label">Sonidos pegando</div>
+        <div id="trendsSounds"></div>
+      </div>
+      <div class="trend-block">
+        <div class="trend-label">Hashtags pegando</div>
+        <div class="hashtags" id="trendsTags"></div>
+      </div>
+      <div class="trend-block">
+        <div class="trend-label">Formato de gancho que está funcionando</div>
+        <p class="trend-text" id="trendsFormato"></p>
+      </div>
+      <div class="trend-block">
+        <div class="trend-label">Resumen</div>
+        <p class="trend-text" id="trendsResumen"></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>De qué va este video</h2>
+    <p class="sub">El tema y el contexto que quieres que se note (ciudad, historia, estilo).</p>
+    <div class="field">
+      <label>Tema</label>
+      <input type="text" id="tema" placeholder="Ej. Sirena estilo neo-japonés" value="Sirena estilo neo-japonés">
+    </div>
+    <div class="field">
+      <label>Contexto que quieres que mencione la narración</label>
+      <textarea id="contexto" placeholder="Ej. Soy tatuador de Orizaba, este diseño mezcla técnica tradicional japonesa con mi paleta de colores">Soy tatuador de Orizaba, Veracruz. Este diseño mezcla estilo neo-japonés con mi paleta de colores: rojo carmesí, dorado, jade y negro con contraste de líneas muy marcado.</textarea>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tus clips</h2>
+    <p class="sub">En el orden en que van. Describe qué muestra cada uno — la IA escribe la narración a partir de esto.</p>
+    <div id="clips"></div>
+    <button class="add-clip" id="addClip">+ Agregar clip</button>
+  </section>
+
+  <button class="btn-main" id="generate">Generar guion</button>
+  <div class="status" id="status"></div>
+
+  <div class="phase2" id="phase2Section">
+    <h2 style="margin-top:24px;">Fase 2 · Narración con voz</h2>
+    <p class="sub" id="phase2Locked">Genera tu guion arriba primero — esta sección se activa en cuanto lo tengas.</p>
+    <p class="sub" id="phase2Unlocked" style="display:none;">Usa tu clave de ElevenLabs para generar el audio de la narración con una voz real. Tu clave solo se usa aquí en tu navegador, en esta sesión — no se guarda en ningún lado.</p>
+
+    <div class="field">
+      <label>Tu API key de ElevenLabs</label>
+      <input type="password" id="elKey" placeholder="sk_..." disabled>
+    </div>
+    <div class="field">
+      <label>Voz</label>
+      <select id="elVoice" disabled>
+        <option>Carga tu clave y pulsa "Cargar voces"</option>
+      </select>
+    </div>
+    <button class="add-clip" id="loadVoices" disabled>Cargar voces</button>
+    <button class="btn-main" id="genNarration" style="margin-top:10px;" disabled>Generar narración</button>
+    <div class="status" id="narrStatus"></div>
+
+    <div id="narrClips"></div>
+    <button class="add-clip" id="downloadFull" style="display:none;">Descargar narración completa (un solo audio)</button>
+  </div>
+
+  <div class="phase2" id="phase3Section">
+    <h2 style="margin-top:24px;">Fase 3 · Ensamblado de video</h2>
+    <p class="sub" id="phase3Locked">Genera la narración en la Fase 2 primero — esta sección se activa en cuanto termine.</p>
+    <p class="sub" id="phase3Unlocked" style="display:none;">Sube el clip real de cada parte (en "Clip de referencia" arriba) y arma el video: la app detecta sola el momento con más movimiento en cada clip, lo recorta, mete la narración y el texto en pantalla, y une todo con transición. Formato vertical 9:16, salida en WebM.</p>
+
+    <div id="p3Clips"></div>
+    <button class="btn-main" id="assembleVideo" style="margin-top:10px;" disabled>Ensamblar video</button>
+    <div class="status" id="p3Status"></div>
+    <video id="p3Preview" controls style="width:100%; margin-top:14px; border-radius:3px; border:1px solid var(--line-strong); display:none;"></video>
+    <a class="add-clip" id="p3Download" style="display:none; text-align:center; text-decoration:none;" download="tattoo-video.webm">Descargar video</a>
+  </div>
+
+  <video id="p3VideoA" muted playsinline style="position:fixed; opacity:0; pointer-events:none; width:2px; height:2px; top:-9999px; left:-9999px;"></video>
+  <video id="p3VideoB" muted playsinline style="position:fixed; opacity:0; pointer-events:none; width:2px; height:2px; top:-9999px; left:-9999px;"></video>
+  <div id="results" style="display:none;">
+    <div class="hook">
+      <div class="hook-label">Gancho (primeros 2 segundos)</div>
+      <div class="hook-text" id="r-hook"></div>
+    </div>
+
+    <h2>Guion por clip</h2>
+    <div id="r-clips"></div>
+
+    <h2 style="margin-top:24px;">Captions</h2>
+    <div class="copy-block">
+      <div class="cb-label">Instagram</div>
+      <button class="copy-btn" data-copy="r-ig">Copiar</button>
+      <p id="r-ig"></p>
+    </div>
+    <div class="copy-block">
+      <div class="cb-label">TikTok</div>
+      <button class="copy-btn" data-copy="r-tt">Copiar</button>
+      <p id="r-tt"></p>
+    </div>
+
+    <h2>Hashtags</h2>
+    <div class="copy-block">
+      <button class="copy-btn" data-copy="r-tags-text">Copiar</button>
+      <div class="hashtags" id="r-tags"></div>
+      <p id="r-tags-text" style="display:none;"></p>
+    </div>
+
+    <h2>Cuándo publicar</h2>
+    <div class="copy-block">
+      <div class="schedule">
+        <div class="big" id="r-day"></div>
+        <div class="big" id="r-time"></div>
+        <div class="why" id="r-why"></div>
+      </div>
+    </div>
+
+    <h2>Tip viral</h2>
+    <div class="tip-block" id="r-tip"></div>
+  </div>
+
+  <div class="phase2" id="phase6Section">
+    <h2 style="margin-top:24px;">Fase 6 · Auditoría pública</h2>
+    <p class="sub">Analiza lo público de tu cuenta y de tu competencia por búsqueda web: bio, temas de contenido, frecuencia y patrones. No incluye métricas privadas (impresiones, alcance, comentarios reales) porque Instagram no las expone fuera de tu propia cuenta autenticada — donde falte un dato público, la app lo dice en vez de inventarlo.</p>
+
+    <div class="field">
+      <label>Tu usuario de Instagram</label>
+      <input type="text" id="auditSelf" placeholder="@tuusuario">
+    </div>
+
+    <label>Competencia (opcional)</label>
+    <div id="auditCompetitors"></div>
+    <button class="add-clip" id="addCompetitor">+ Agregar competencia</button>
+
+    <button class="btn-main" id="runAudit" style="margin-top:14px;">Analizar</button>
+    <div class="status" id="auditStatus"></div>
+    <div class="trends-updated" id="auditUpdated" style="margin-top:6px;"></div>
+
+    <div id="auditResult" style="display:none; margin-top:18px;">
+      <h2 style="margin-top:20px;">Cuentas analizadas</h2>
+      <div id="auditAccounts"></div>
+
+      <h2 style="margin-top:20px;">Patrones detectados</h2>
+      <ul id="auditPatterns" class="audit-list"></ul>
+
+      <h2 style="margin-top:20px;">Comentarios y sentimiento</h2>
+      <p class="trend-text" id="auditSentiment"></p>
+
+      <h2 style="margin-top:20px;">Auditoría de contenido</h2>
+      <p class="trend-text" id="auditContent"></p>
+
+      <h2 style="margin-top:20px;">Mejoras sugeridas</h2>
+      <ul id="auditImprovements" class="audit-list"></ul>
+    </div>
+  </div>
+
+  <details id="histDetails">
+    <summary>Guiones anteriores</summary>
+    <div id="histList"></div>
+  </details>
+
+  <div class="roadmap">
+    <h2>Las siguientes fases</h2>
+    <div class="rm-item"><span class="rm-num">01</span><span>Guion: narración, captions, hashtags y calendario a partir de tus clips descritos.</span></div>
+    <div class="rm-item"><span class="rm-num">02</span><span>Voz narrada automática: convertir el guion en audio con una voz elegida, ya cronometrado por clip.</span></div>
+    <div class="rm-item"><span class="rm-num">03</span><span>Ensamblado automático de video: subir los clips y que la app los corte, una con la narración y agregue el texto en pantalla.</span></div>
+
+    <div class="rm-item"><span class="rm-num">04</span><span>Selección inteligente del mejor momento dentro de cada clip crudo, sin marcarlo tú a mano.</span></div>
+    <div class="rm-item"><span class="rm-num">05</span><span>Tendencias: búsqueda semanal de sonidos y hashtags que están pegando en el nicho tattoo, para alimentar el gancho.</span></div>
+    <div class="rm-item rm-current"><span class="rm-num">06</span><span>Auditoría pública: análisis de tu cuenta y competencia por búsqueda web — patrones, sentimiento público y mejoras — esto es lo que estás usando ahora.</span></div>
+    <div class="rm-item"><span class="rm-num">07</span><span>Publicación directa: programar y publicar a Instagram y TikTok sin salir de la app.</span></div>
+  </div>
+
+</div>
+
+<script>
+let clipCount = 0;
+
+function addClipRow(label='', desc=''){
+  clipCount++;
+  const id = clipCount;
+  const div = document.createElement('div');
+  div.className = 'clip';
+  div.dataset.id = id;
+  div.innerHTML = `
+    <div class="clip-head">
+      <div class="clip-num">${String(document.querySelectorAll('.clip').length+1).padStart(2,'0')}</div>
+      <button class="remove-clip" onclick="removeClip(${id})">Quitar</button>
+    </div>
+    <div class="field">
+      <label>Qué es</label>
+      <input type="text" class="clip-label" value="${label}" placeholder="Ej. Pegado de la plantilla">
+    </div>
+    <div class="field">
+      <label>Clip de referencia (opcional — solo para verlo mientras escribes, no se sube a ningún lado)</label>
+      <input type="file" class="clip-file" accept="video/*">
+      <video class="clip-preview" controls style="display:none; width:100%; margin-top:8px; border-radius:3px; border:1px solid var(--line-strong);"></video>
+    </div>
+    <div class="field">
+      <label>Qué muestra</label>
+      <textarea class="clip-desc" placeholder="Ej. Se ve cómo limpio la piel y transfiero el diseño de la sirena">${desc}</textarea>
+    </div>
+  `;
+  div.querySelector('.clip-file').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    const preview = div.querySelector('.clip-preview');
+    if(file){
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    }
+  });
+  document.getElementById('clips').appendChild(div);
+}
+
+function removeClip(id){
+  document.querySelector(`.clip[data-id="${id}"]`).remove();
+  renumberClips();
+}
+
+function renumberClips(){
+  document.querySelectorAll('.clip').forEach((el, i)=>{
+    el.querySelector('.clip-num').textContent = String(i+1).padStart(2,'0');
+  });
+}
+
+// ---------- Fase 5: Tendencias ----------
+let currentTrends = null;
+const TREND_MAX_AGE_DAYS = 7;
+
+function daysSince(iso){
+  return (Date.now() - new Date(iso).getTime()) / (1000*60*60*24);
+}
+
+async function loadTrends(){
+  try{
+    const existing = await window.storage.get('tendencias-tattoo', false);
+    if(existing && existing.value){
+      const data = JSON.parse(existing.value);
+      currentTrends = data;
+      renderTrends(data);
+      if(daysSince(data.fecha) >= TREND_MAX_AGE_DAYS){
+        fetchTrends(); // se venció la semana, se refresca sola
+      }
+      return;
+    }
+  } catch(e){ /* no hay tendencias guardadas todavía */ }
+  fetchTrends();
+}
+
+async function fetchTrends(){
+  const btn = document.getElementById('refreshTrends');
+  const statusEl = document.getElementById('trendsStatus');
+  btn.disabled = true;
+  statusEl.textContent = 'Buscando qué está pegando esta semana en el nicho tattoo...';
+  statusEl.className = 'status';
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1200,
+        system: `Eres un investigador de tendencias de redes sociales especializado en el nicho de tatuajes (tattoo artists) en Instagram Reels y TikTok. Usa la búsqueda web para encontrar qué está pegando AHORA MISMO, esta semana: sonidos/audios en tendencia que se están usando en contenido de tatuadores o de nichos afines (proceso creativo, oficios, arte, transformación), qué formato de gancho está funcionando, y qué hashtags tienen más movimiento. Responde EXCLUSIVAMENTE un objeto JSON, sin texto adicional, sin markdown, sin backticks, con esta estructura exacta:
+{"sonidos":[{"nombre":"string, nombre o descripción identificable del sonido/audio","uso":"string, cómo se está usando o por qué pega en contenido de oficio/arte/tattoo"}],"hashtags":["string", ...10 a 15 hashtags reales y vigentes, mezcla de nicho tattoo y de tendencia general del momento],"formato_gancho":"string, 1-2 frases sobre qué tipo de gancho o estructura de los primeros segundos está funcionando esta semana","resumen":"string, 1-2 frases de resumen general de la semana"}
+Incluye entre 3 y 6 sonidos. Basa todo en resultados reales de tu búsqueda — si no encuentras algo específico del nicho tattoo, usa lo más cercano de nichos de oficio/arte/transformación y dilo en el campo correspondiente. No inventes nombres de sonidos que no aparezcan en tu búsqueda.`,
+        messages: [{ role: "user", content: "Busca qué sonidos, formatos de gancho y hashtags están pegando esta semana en Instagram y TikTok dentro del nicho de tatuajes." }],
+        tools: [{ type: "web_search_20250305", name: "web_search" }]
+      })
+    });
+
+    const data = await response.json();
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    parsed.fecha = new Date().toISOString();
+
+    currentTrends = parsed;
+    await window.storage.set('tendencias-tattoo', JSON.stringify(parsed), false);
+    renderTrends(parsed);
+    statusEl.textContent = 'Tendencias actualizadas.';
+  } catch(err){
+    console.error(err);
+    statusEl.textContent = 'No se pudieron buscar las tendencias. Intenta de nuevo.';
+    statusEl.className = 'status err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderTrends(data){
+  document.getElementById('trendsResult').style.display = 'block';
+
+  const d = new Date(data.fecha);
+  document.getElementById('trendsUpdated').textContent =
+    `Actualizado: ${d.toLocaleDateString('es-MX', {day:'numeric', month:'short', year:'numeric'})}`;
+
+  const soundsWrap = document.getElementById('trendsSounds');
+  soundsWrap.innerHTML = '';
+  (data.sonidos || []).forEach(s=>{
+    const div = document.createElement('div');
+    div.className = 'trend-sound';
+    div.innerHTML = `<div class="ts-name">${s.nombre || ''}</div><div class="ts-use">${s.uso || ''}</div>`;
+    soundsWrap.appendChild(div);
+  });
+
+  const tagsWrap = document.getElementById('trendsTags');
+  tagsWrap.innerHTML = '';
+  (data.hashtags || []).forEach(t=>{
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = t.startsWith('#') ? t : '#'+t;
+    tagsWrap.appendChild(span);
+  });
+
+  document.getElementById('trendsFormato').textContent = data.formato_gancho || '';
+  document.getElementById('trendsResumen').textContent = data.resumen || '';
+}
+
+document.getElementById('refreshTrends').addEventListener('click', ()=>fetchTrends());
+loadTrends();
+
+document.getElementById('addClip').addEventListener('click', ()=>addClipRow());
+addClipRow('Pegado de la plantilla','Limpio la piel y transfiero el diseño de la sirena, se ve el papel carbón despegándose y el contorno ya marcado sobre la piel.');
+addClipRow('Tatuando','Estoy pasando la máquina sobre las líneas del contorno, se ve el detalle del trazo y los colores crimson y jade que voy metiendo.');
+
+function setStatus(msg, isErr=false){
+  const s = document.getElementById('status');
+  s.textContent = msg;
+  s.className = 'status' + (isErr ? ' err' : '');
+}
+
+async function generate(){
+  const tema = document.getElementById('tema').value.trim();
+  const contexto = document.getElementById('contexto').value.trim();
+  const clipEls = document.querySelectorAll('.clip');
+
+  if(!tema){ setStatus('Escribe el tema del video primero.', true); return; }
+  if(clipEls.length === 0){ setStatus('Agrega al menos un clip.', true); return; }
+
+  const clips = Array.from(clipEls).map((el, i)=>({
+    orden: i+1,
+    etiqueta: el.querySelector('.clip-label').value.trim() || `Clip ${i+1}`,
+    descripcion: el.querySelector('.clip-desc').value.trim()
+  }));
+
+  if(clips.some(c => !c.descripcion)){ setStatus('Describe qué muestra cada clip.', true); return; }
+
+  const btn = document.getElementById('generate');
+  btn.disabled = true;
+  setStatus('Escribiendo el guion...');
+
+  try{
+    let trendsContext = '';
+    if(currentTrends){
+      const tags = (currentTrends.hashtags || []).join(', ');
+      const sonidos = (currentTrends.sonidos || []).map(s => s.nombre).join(', ');
+      trendsContext = `\n\nTendencias vigentes esta semana en el nicho de tatuajes (úsalas, no las ignores):\n- Sonidos que están pegando: ${sonidos || 'sin datos'}\n- Hashtags que están pegando: ${tags || 'sin datos'}\n- Formato de gancho que está funcionando ahora: ${currentTrends.formato_gancho || 'sin datos'}\n- Resumen de la semana: ${currentTrends.resumen || 'sin datos'}`;
+    }
+
+    const userContent = `Tema: ${tema}\nContexto/marca personal: ${contexto || '(sin contexto adicional)'}${trendsContext}\n\nClips en orden:\n` +
+      clips.map(c => `${c.orden}. ${c.etiqueta} — ${c.descripcion}`).join('\n');
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: `Eres un experto en storytelling y contenido viral para tatuadores en Instagram y TikTok. A partir del tema, el contexto y los clips (ya en el orden que el tatuador quiere), genera EXCLUSIVAMENTE un objeto JSON, sin texto adicional, sin markdown, sin backticks, con esta estructura exacta:
+{"gancho":"string, lo que se dice o aparece en los primeros 2 segundos para enganchar","clips":[{"orden":number,"etiqueta":"string","narracion":"string, lo que la voz en off dice mientras se ve ese clip, tono cercano y auténtico, nada de relleno, máximo 2 frases","texto_pantalla":"string corto o vacío si no aplica","duracion_sugerida_seg":number}],"caption_instagram":"string","caption_tiktok":"string","hashtags":["string", ...8 a 15 hashtags, mezcla de nicho tattoo y amplios],"dia_sugerido":"string, día de la semana","hora_sugerida":"string, hora aproximada","razon_dia_hora":"string, una frase breve","tip_viral":"string, una frase concreta y accionable, nada genérica"}
+
+REGLA FIJA E INNEGOCIABLE sobre el gancho: los primeros 1-3 segundos del video (el campo "gancho", y la narración/texto_pantalla del clip número 1) SIEMPRE deben ser lo más llamativo y viral de todo el contenido disponible. Usa el dato más atractivo del contexto (identidad, origen, contraste, un giro inesperado, una pregunta directa) desde el primer instante. Nunca empieces con introducciones lentas tipo "hoy les traigo", "en este video les voy a mostrar" o "hola a todos". Ve directo al dato o momento que detiene el scroll, y solo después entra al proceso del tatuaje.
+
+Si el usuario te da "Tendencias vigentes esta semana", NO son un dato de fondo opcional: úsalas de verdad. El formato de gancho que está funcionando esta semana debe influir en cómo estructuras el "gancho" y la narración del clip 1. De los hashtags, incluye los que de verdad apliquen al tema (no fuerces uno que no tenga sentido) mezclados con los de nicho tattoo de siempre — el resultado nunca debe sentirse genérico ni de una semana cualquiera. Si no te dan tendencias, sigue las reglas normales sin mencionarlo.
+
+Escribe todo en español, en la voz de un tatuador auténtico, no de marketer. Sé específico al tema y a cada clip, nunca genérico.`,
+        messages: [{ role: "user", content: userContent }]
+      })
+    });
+
+    const data = await response.json();
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
+
+    renderResult(result);
+    await saveToHistory(tema, result);
+    setStatus('Listo.');
+  } catch(err){
+    console.error(err);
+    setStatus('No se pudo generar el guion. Intenta de nuevo.', true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderResult(result){
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('r-hook').textContent = result.gancho || '';
+
+  const rc = document.getElementById('r-clips');
+  rc.innerHTML = '';
+  (result.clips || []).forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'result-clip';
+    div.innerHTML = `
+      <div class="result-num">${String(c.orden).padStart(2,'0')}</div>
+      <div class="result-body">
+        <div class="rc-label">${c.etiqueta} · ~${c.duracion_sugerida_seg || '?'}s</div>
+        <div class="rc-narr">${c.narracion || ''}</div>
+        ${c.texto_pantalla ? `<div class="rc-onscreen">${c.texto_pantalla}</div>` : ''}
+      </div>
+    `;
+    rc.appendChild(div);
+  });
+
+  document.getElementById('r-ig').textContent = result.caption_instagram || '';
+  document.getElementById('r-tt').textContent = result.caption_tiktok || '';
+
+  const tagsWrap = document.getElementById('r-tags');
+  tagsWrap.innerHTML = '';
+  const tags = (result.hashtags || []).map(t => t.startsWith('#') ? t : '#'+t);
+  tags.forEach(t=>{
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = t;
+    tagsWrap.appendChild(span);
+  });
+  document.getElementById('r-tags-text').textContent = tags.join(' ');
+
+  document.getElementById('r-day').textContent = result.dia_sugerido || '';
+  document.getElementById('r-time').textContent = result.hora_sugerida || '';
+  document.getElementById('r-why').textContent = result.razon_dia_hora || '';
+
+  document.getElementById('r-tip').textContent = result.tip_viral || '';
+
+  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+document.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('copy-btn')){
+    const targetId = e.target.dataset.copy;
+    const text = document.getElementById(targetId).textContent;
+    navigator.clipboard.writeText(text).then(()=>{
+      const original = e.target.textContent;
+      e.target.textContent = 'Copiado';
+      setTimeout(()=>{ e.target.textContent = original; }, 1400);
+    });
+  }
+});
+
+async function saveToHistory(tema, result){
+  try{
+    let historial = [];
+    try{
+      const existing = await window.storage.get('guiones-historial', false);
+      if(existing && existing.value) historial = JSON.parse(existing.value);
+    } catch(e){ /* no existe aún */ }
+
+    historial.unshift({ tema, fecha: new Date().toISOString(), result });
+    historial = historial.slice(0, 20);
+
+    await window.storage.set('guiones-historial', JSON.stringify(historial), false);
+    renderHistory(historial);
+  } catch(e){
+    console.error('No se pudo guardar el historial', e);
+  }
+}
+
+async function loadHistory(){
+  try{
+    const existing = await window.storage.get('guiones-historial', false);
+    if(existing && existing.value){
+      renderHistory(JSON.parse(existing.value));
+    }
+  } catch(e){ /* sin historial todavía */ }
+}
+
+function renderHistory(historial){
+  const list = document.getElementById('histList');
+  list.innerHTML = '';
+  historial.forEach((h, i)=>{
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    const d = new Date(h.fecha);
+    div.innerHTML = `<div>${h.tema}</div><div class="hd">${d.toLocaleDateString('es-MX', {day:'numeric', month:'short', year:'numeric'})}</div>`;
+    div.addEventListener('click', ()=>{
+      renderResult(h.result);
+    });
+    list.appendChild(div);
+  });
+}
+
+document.getElementById('generate').addEventListener('click', generate);
+loadHistory();
+
+// ---------- Fase 2: Narración con voz ----------
+let currentResult = null;
+let generatedClipBuffers = []; // AudioBuffer por clip, en orden
+
+const _origRenderResult = renderResult;
+renderResult = function(result){
+  _origRenderResult(result);
+  currentResult = result;
+  document.getElementById('narrClips').innerHTML = '';
+  document.getElementById('downloadFull').style.display = 'none';
+  generatedClipBuffers = [];
+  setNarrStatus('');
+  unlockPhase2();
+  unlockPhase3();
+};
+
+function unlockPhase2(){
+  document.getElementById('phase2Locked').style.display = 'none';
+  document.getElementById('phase2Unlocked').style.display = 'block';
+  document.getElementById('elKey').disabled = false;
+  document.getElementById('loadVoices').disabled = false;
+
+  const t1 = document.querySelector('.ft-item[data-fase="1"]');
+  const t2 = document.querySelector('.ft-item[data-fase="2"]');
+  t1.className = 'ft-item ft-unlocked';
+  t2.className = 'ft-item ft-current';
+}
+
+function setNarrStatus(msg, isErr=false){
+  const s = document.getElementById('narrStatus');
+  s.textContent = msg;
+  s.className = 'status' + (isErr ? ' err' : '');
+}
+
+document.getElementById('loadVoices').addEventListener('click', async ()=>{
+  const key = document.getElementById('elKey').value.trim();
+  if(!key){ setNarrStatus('Pega tu API key de ElevenLabs primero.', true); return; }
+  setNarrStatus('Cargando voces...');
+  try{
+    const res = await fetch('https://api.elevenlabs.io/v1/voices', {
+      headers: { 'xi-api-key': key }
+    });
+    if(!res.ok) throw new Error('key inválida o sin permisos');
+    const data = await res.json();
+    const select = document.getElementById('elVoice');
+    select.innerHTML = '';
+    (data.voices || []).forEach(v=>{
+      const opt = document.createElement('option');
+      opt.value = v.voice_id;
+      opt.textContent = v.name;
+      select.appendChild(opt);
+    });
+    select.disabled = false;
+    document.getElementById('genNarration').disabled = false;
+    setNarrStatus(`${(data.voices||[]).length} voces cargadas.`);
+  } catch(err){
+    console.error(err);
+    setNarrStatus('No se pudieron cargar las voces. Revisa tu API key.', true);
+  }
+});
+
+document.getElementById('genNarration').addEventListener('click', async ()=>{
+  if(!currentResult){ setNarrStatus('Genera primero el guion.', true); return; }
+  const key = document.getElementById('elKey').value.trim();
+  const voiceId = document.getElementById('elVoice').value;
+  if(!key || !voiceId){ setNarrStatus('Carga tu clave y elige una voz primero.', true); return; }
+
+  const btn = document.getElementById('genNarration');
+  btn.disabled = true;
+  const wrap = document.getElementById('narrClips');
+  wrap.innerHTML = '';
+  generatedClipBuffers = [];
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const clips = currentResult.clips || [];
+
+  for(let i=0; i<clips.length; i++){
+    const c = clips[i];
+    setNarrStatus(`Generando voz del clip ${i+1} de ${clips.length}...`);
+    try{
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': key,
+          'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg'
+        },
+        body: JSON.stringify({
+          text: c.narracion,
+          model_id: 'eleven_multilingual_v2'
+        })
+      });
+      if(!res.ok) throw new Error('fallo TTS clip ' + (i+1));
+      const arrayBuf = await res.arrayBuffer();
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuf.slice(0));
+      generatedClipBuffers[i] = audioBuffer;
+
+      const blob = new Blob([arrayBuf], { type: 'audio/mpeg' });
+      const url = URL.createObjectURL(blob);
+
+      const div = document.createElement('div');
+      div.className = 'narr-clip';
+      div.innerHTML = `
+        <div class="nc-label">Clip ${String(c.orden).padStart(2,'0')} · ${c.etiqueta}</div>
+        <audio controls src="${url}"></audio>
+        <a class="dl" href="${url}" download="clip-${c.orden}-narracion.mp3">Descargar MP3</a>
+      `;
+      wrap.appendChild(div);
+    } catch(err){
+      console.error(err);
+      setNarrStatus(`Falló el clip ${i+1}. Revisa tu key o intenta de nuevo.`, true);
+    }
+  }
+
+  if(generatedClipBuffers.filter(Boolean).length === clips.length){
+    setNarrStatus('Narración lista.');
+    document.getElementById('downloadFull').style.display = 'block';
+    unlockPhase3();
+  } else {
+    setNarrStatus('Algunos clips no se generaron. Puedes reintentar.', true);
+  }
+  btn.disabled = false;
+});
+
+document.getElementById('downloadFull').addEventListener('click', ()=>{
+  const buffers = generatedClipBuffers.filter(Boolean);
+  if(buffers.length === 0) return;
+
+  const sampleRate = buffers[0].sampleRate;
+  const gapSec = 0.35;
+  const gapSamples = Math.floor(gapSec * sampleRate);
+  const totalLength = buffers.reduce((sum, b) => sum + b.length, 0) + gapSamples * (buffers.length - 1);
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const outBuffer = audioCtx.createBuffer(1, totalLength, sampleRate);
+  const outData = outBuffer.getChannelData(0);
+
+  let offset = 0;
+  buffers.forEach((b, i)=>{
+    const chData = b.getChannelData(0);
+    outData.set(chData, offset);
+    offset += b.length + (i < buffers.length-1 ? gapSamples : 0);
+  });
+
+  const wavBlob = bufferToWav(outBuffer);
+  const url = URL.createObjectURL(wavBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'narracion-completa.wav';
+  a.click();
+});
+
+function bufferToWav(buffer){
+  const numChannels = 1;
+  const sampleRate = buffer.sampleRate;
+  const samples = buffer.getChannelData(0);
+  const bytesPerSample = 2;
+  const blockAlign = numChannels * bytesPerSample;
+  const dataSize = samples.length * bytesPerSample;
+  const bufferArr = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(bufferArr);
+
+  function writeStr(offset, str){
+    for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i));
+  }
+
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  let offset = 44;
+  for(let i=0;i<samples.length;i++){
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    offset += 2;
+  }
+
+  return new Blob([bufferArr], { type: 'audio/wav' });
+}
+
+// ---------- Fase 3: Ensamblado de video ----------
+function unlockPhase3(){
+  document.getElementById('phase3Locked').style.display = 'none';
+  document.getElementById('phase3Unlocked').style.display = 'block';
+  document.getElementById('assembleVideo').disabled = false;
+
+  const t2 = document.querySelector('.ft-item[data-fase="2"]');
+  const t3 = document.querySelector('.ft-item[data-fase="3"]');
+  const t4 = document.querySelector('.ft-item[data-fase="4"]');
+  t2.className = 'ft-item ft-unlocked';
+  t3.className = 'ft-item ft-unlocked';
+  t4.className = 'ft-item ft-current';
+
+  renderPhase3Clips();
+}
+
+function renderPhase3Clips(){
+  const wrap = document.getElementById('p3Clips');
+  wrap.innerHTML = '';
+  const clips = (currentResult && currentResult.clips) || [];
+  const domClips = document.querySelectorAll('.clip');
+
+  clips.forEach((c, i)=>{
+    const domClip = domClips[i];
+    const fileInput = domClip ? domClip.querySelector('.clip-file') : null;
+    const hasFile = fileInput && fileInput.files && fileInput.files[0];
+
+    const div = document.createElement('div');
+    div.className = 'p3-clip';
+    div.dataset.idx = i;
+    div.innerHTML = `
+      <div class="p3-label">${String(c.orden).padStart(2,'0')} · ${c.etiqueta}</div>
+      <div class="p3-file-status ${hasFile ? 'ok' : ''}">${hasFile ? 'Clip cargado ✓ — se recorta y ajusta solo' : 'Sin clip — cárgalo arriba en "Clip de referencia" de este mismo clip'}</div>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+function drawCover(ctx, video, cw, ch){
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if(!vw || !vh) return;
+  const scale = Math.max(cw/vw, ch/vh);
+  const dw = vw*scale, dh = vh*scale;
+  ctx.drawImage(video, (cw-dw)/2, (ch-dh)/2, dw, dh);
+}
+
+function drawOverlay(ctx, cw, ch, text){
+  if(!text) return;
+  ctx.font = "600 34px 'Big Shoulders Display', sans-serif";
+  ctx.textAlign = 'center';
+  const y = ch * 0.82;
+  const metrics = ctx.measureText(text.toUpperCase());
+  const pad = 20;
+  ctx.fillStyle = 'rgba(18,15,14,0.72)';
+  ctx.fillRect(cw/2 - metrics.width/2 - pad, y - 38, metrics.width + pad*2, 52);
+  ctx.fillStyle = '#c79a3d';
+  ctx.fillText(text.toUpperCase(), cw/2, y - 2);
+}
+
+function seekTo(video, t){
+  return new Promise(res=>{
+    if(Math.abs(video.currentTime - t) < 0.05){ res(); return; }
+    const handler = ()=>{ video.removeEventListener('seeked', handler); res(); };
+    video.addEventListener('seeked', handler);
+    video.currentTime = t;
+  });
+}
+
+function withTimeout(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise(res => setTimeout(res, ms))
+  ]);
+}
+
+function waitUntilTime(video, t){
+  return withTimeout(new Promise(res=>{
+    const handler = ()=>{
+      if(video.currentTime >= t){ video.removeEventListener('timeupdate', handler); res(); }
+    };
+    video.addEventListener('timeupdate', handler);
+    video.addEventListener('ended', res, { once:true });
+  }), 15000);
+}
+
+function loadClipInto(videoEl, file){
+  function tryLoad(src){
+    return new Promise((resolve, reject)=>{
+      const codeMap = {
+        1: 'la carga se interrumpió',
+        2: 'error de red al leerlo',
+        3: 'no se pudo decodificar — el códec del video no es compatible',
+        4: 'formato no soportado por el navegador'
+      };
+      const timer = setTimeout(()=>{ cleanup(); reject(new Error('timeout')); }, 8000);
+      function cleanup(){
+        clearTimeout(timer);
+        videoEl.removeEventListener('loadedmetadata', onLoaded);
+        videoEl.removeEventListener('error', onError);
+      }
+      function onLoaded(){ cleanup(); resolve(); }
+      function onError(){
+        cleanup();
+        const code = videoEl.error ? videoEl.error.code : 0;
+        reject(new Error(codeMap[code] || 'archivo no soportado'));
+      }
+      videoEl.addEventListener('loadedmetadata', onLoaded);
+      videoEl.addEventListener('error', onError);
+      videoEl.src = src;
+    });
+  }
+
+  return new Promise((resolve, reject)=>{
+    const blobUrl = URL.createObjectURL(file);
+    tryLoad(blobUrl).then(()=>{
+      seekTo(videoEl, 0).then(resolve);
+    }).catch(()=>{
+      // respaldo: si el blob URL falla (por ejemplo, por restricciones del entorno embebido),
+      // reintenta cargando el video como data URI
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        tryLoad(reader.result).then(()=>{
+          seekTo(videoEl, 0).then(resolve);
+        }).catch((err2)=>{
+          reject(new Error(`"${file.name}" no se pudo cargar ni por blob ni por data URI (${err2.message}). Prueba abriendo esta app en una pestaña nueva del navegador en vez del recuadro embebido — busca el ícono de expandir/abrir arriba del recuadro.`));
+        });
+      };
+      reader.onerror = ()=> reject(new Error(`No se pudo leer "${file.name}" del todo.`));
+      reader.readAsDataURL(file);
+    });
+  });
+}
+
+async function analyzeBestWindow(video, windowDuration, statusCb){
+  const duration = video.duration;
+  if(!isFinite(duration) || duration <= windowDuration + 0.2) return 0;
+
+  const sampleCount = Math.min(14, Math.max(6, Math.floor(duration)));
+  const times = [];
+  for(let i=0; i<=sampleCount; i++) times.push((duration * i) / sampleCount);
+
+  const ac = document.createElement('canvas');
+  ac.width = 48; ac.height = 80;
+  const actx = ac.getContext('2d', { willReadFrequently: true });
+
+  let prevData = null;
+  const motion = [];
+  for(let i=0; i<times.length; i++){
+    if(statusCb) statusCb(i, times.length);
+    await seekTo(video, times[i]);
+    actx.drawImage(video, 0, 0, ac.width, ac.height);
+    const data = actx.getImageData(0, 0, ac.width, ac.height).data;
+    let score = 0;
+    if(prevData){
+      for(let p=0; p<data.length; p+=4){
+        score += Math.abs(data[p]-prevData[p]) + Math.abs(data[p+1]-prevData[p+1]) + Math.abs(data[p+2]-prevData[p+2]);
+      }
+    }
+    motion.push({ t: times[i], score });
+    prevData = data;
+  }
+
+  let bestStart = 0, bestScore = -1;
+  for(let i=0; i<motion.length; i++){
+    const start = motion[i].t;
+    if(start + windowDuration > duration) continue;
+    let sum = 0;
+    for(let j=i; j<motion.length && motion[j].t < start + windowDuration; j++) sum += motion[j].score;
+    if(sum > bestScore){ bestScore = sum; bestStart = start; }
+  }
+  await seekTo(video, 0);
+  return bestStart;
+}
+
+document.getElementById('assembleVideo').addEventListener('click', async ()=>{
+  const clips = (currentResult && currentResult.clips) || [];
+  const domClips = document.querySelectorAll('.clip');
+  const p3Status = document.getElementById('p3Status');
+  const btn = document.getElementById('assembleVideo');
+
+  const plan = clips.map((c, i)=>{
+    const fileInput = domClips[i] ? domClips[i].querySelector('.clip-file') : null;
+    const file = fileInput && fileInput.files && fileInput.files[0];
+    return { clip: c, file, narrationBuffer: generatedClipBuffers[i] || null };
+  });
+
+  if(plan.some(p => !p.file)){
+    p3Status.textContent = 'Falta cargar el clip real de al menos una parte. Súbelos arriba en "Clip de referencia".';
+    p3Status.className = 'status err';
+    return;
+  }
+
+  btn.disabled = true;
+  document.getElementById('p3Preview').style.display = 'none';
+  document.getElementById('p3Download').style.display = 'none';
+
+  try{
+    await document.fonts.ready;
+
+    const CW = 720, CH = 1280;
+    const canvas = document.createElement('canvas');
+    canvas.width = CW; canvas.height = CH;
+    const ctx = canvas.getContext('2d');
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioDest = audioCtx.createMediaStreamDestination();
+    const canvasStream = canvas.captureStream(30);
+    const combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioDest.stream.getAudioTracks()]);
+
+    let mimeType = 'video/webm;codecs=vp9,opus';
+    if(!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+    const recorder = new MediaRecorder(combined, { mimeType });
+    const chunks = [];
+    recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+
+    const finished = new Promise(resolve => { recorder.onstop = resolve; });
+    recorder.start();
+
+    const blend = { mode:'single', a:null, b:null, alpha:0, text:'' };
+    let drawing = true;
+
+    function drawLoop(){
+      if(!drawing) return;
+      ctx.fillStyle = '#120f0e';
+      ctx.fillRect(0,0,CW,CH);
+      if(blend.mode === 'single' && blend.a){
+        drawCover(ctx, blend.a, CW, CH);
+      } else if(blend.mode === 'cross'){
+        ctx.globalAlpha = 1 - blend.alpha;
+        drawCover(ctx, blend.a, CW, CH);
+        ctx.globalAlpha = blend.alpha;
+        drawCover(ctx, blend.b, CW, CH);
+        ctx.globalAlpha = 1;
+      }
+      drawOverlay(ctx, CW, CH, blend.text);
+      requestAnimationFrame(drawLoop);
+    }
+    drawLoop();
+
+    const videoA = document.getElementById('p3VideoA');
+    const videoB = document.getElementById('p3VideoB');
+    const pool = [videoA, videoB];
+    const TRANSITION = 0.4;
+
+    // precarga el primer clip y detecta su mejor momento
+    await loadClipInto(pool[0], plan[0].file);
+    plan[0].targetDuration = Math.min(plan[0].clip.duracion_sugerida_seg || 4, pool[0].duration || 4);
+    p3Status.textContent = 'Buscando el mejor momento del clip 1...';
+    plan[0].segmentStart = await analyzeBestWindow(pool[0], plan[0].targetDuration, (i,n)=>{
+      p3Status.textContent = `Buscando el mejor momento del clip 1... (${i+1}/${n})`;
+    });
+    await seekTo(pool[0], plan[0].segmentStart);
+    await pool[0].play();
+
+    for(let i=0; i<plan.length; i++){
+      const p = plan[i];
+      const cur = pool[i % 2];
+      const hasNext = i < plan.length - 1;
+
+      p3Status.textContent = `Armando clip ${i+1} de ${plan.length}...`;
+      p3Status.className = 'status';
+
+      const targetDuration = p.targetDuration;
+      const segmentStart = p.segmentStart;
+      const endAbsolute = segmentStart + targetDuration;
+
+      blend.mode = 'single';
+      blend.a = cur;
+      blend.text = p.clip.texto_pantalla || '';
+
+      let audioDone = Promise.resolve();
+      if(p.narrationBuffer){
+        const src = audioCtx.createBufferSource();
+        src.buffer = p.narrationBuffer;
+        src.connect(audioDest);
+        src.start();
+        audioDone = new Promise(res => { src.onended = res; });
+      }
+
+      if(hasNext){
+        const next = pool[(i+1) % 2];
+        await loadClipInto(next, plan[i+1].file);
+        plan[i+1].targetDuration = Math.min(plan[i+1].clip.duracion_sugerida_seg || 4, next.duration || 4);
+        p3Status.textContent = `Buscando el mejor momento del clip ${i+2}...`;
+        plan[i+1].segmentStart = await analyzeBestWindow(next, plan[i+1].targetDuration, (idx,n)=>{
+          p3Status.textContent = `Buscando el mejor momento del clip ${i+2}... (${idx+1}/${n})`;
+        });
+        await seekTo(next, plan[i+1].segmentStart);
+
+        const waitPoint = segmentStart + Math.max(0.1, targetDuration - TRANSITION);
+        await waitUntilTime(cur, waitPoint);
+
+        await next.play();
+        blend.text = plan[i+1].clip.texto_pantalla || '';
+
+        await new Promise(res=>{
+          const t0 = performance.now();
+          function step(){
+            const elapsed = (performance.now() - t0) / 1000;
+            const prog = Math.min(1, elapsed / TRANSITION);
+            blend.mode = 'cross';
+            blend.a = cur; blend.b = next; blend.alpha = prog;
+            if(prog < 1) requestAnimationFrame(step); else res();
+          }
+          step();
+        });
+        cur.pause();
+      } else {
+        await waitUntilTime(cur, endAbsolute);
+        cur.pause();
+      }
+
+      await withTimeout(audioDone, 100);
+    }
+
+    drawing = false;
+    recorder.stop();
+    await finished;
+
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const preview = document.getElementById('p3Preview');
+    preview.src = url;
+    preview.style.display = 'block';
+    const dl = document.getElementById('p3Download');
+    dl.href = url;
+    dl.style.display = 'block';
+
+    p3Status.textContent = 'Video listo.';
+  } catch(err){
+    console.error(err);
+    p3Status.textContent = (err && err.message) ? err.message : 'Algo falló armando el video. Revisa que los clips hayan cargado bien e intenta de nuevo.';
+    p3Status.className = 'status err';
+  } finally {
+    btn.disabled = false;
+  }
+});
+// ---------- Fase 6: Auditoría pública ----------
+let competitorCount = 0;
+
+function addCompetitorRow(){
+  competitorCount++;
+  const id = competitorCount;
+  const div = document.createElement('div');
+  div.className = 'competitor-row';
+  div.dataset.id = id;
+  div.innerHTML = `
+    <input type="text" class="competitor-input" placeholder="@competidor">
+    <button type="button" onclick="removeCompetitorRow(${id})">Quitar</button>
+  `;
+  document.getElementById('auditCompetitors').appendChild(div);
+}
+
+function removeCompetitorRow(id){
+  document.querySelector(`.competitor-row[data-id="${id}"]`).remove();
+}
+
+document.getElementById('addCompetitor').addEventListener('click', ()=>addCompetitorRow());
+
+async function loadLastAudit(){
+  try{
+    const existing = await window.storage.get('auditoria-publica', false);
+    if(existing && existing.value){
+      renderAudit(JSON.parse(existing.value));
+    }
+  } catch(e){ /* sin auditoría todavía */ }
+}
+
+async function runAudit(){
+  const selfUser = document.getElementById('auditSelf').value.trim().replace(/^@/, '');
+  const competitors = Array.from(document.querySelectorAll('.competitor-input'))
+    .map(i => i.value.trim().replace(/^@/, ''))
+    .filter(Boolean);
+
+  const statusEl = document.getElementById('auditStatus');
+  const btn = document.getElementById('runAudit');
+
+  if(!selfUser){
+    statusEl.textContent = 'Escribe tu usuario de Instagram primero.';
+    statusEl.className = 'status err';
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.textContent = 'Buscando lo público de estas cuentas...';
+  statusEl.className = 'status';
+
+  try{
+    const userContent = `Cuenta propia: @${selfUser}\nCompetencia: ${competitors.length ? competitors.map(c => '@'+c).join(', ') : '(ninguna dada)'}`;
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1800,
+        system: `Eres un auditor de redes sociales especializado en cuentas de tatuadores en Instagram. Se te da un usuario propio y, opcionalmente, usuarios de competencia. Usa la búsqueda web para encontrar SOLO información pública sobre cada cuenta (perfil público de Instagram, menciones, trackers públicos de seguidores tipo Social Blade, notas de prensa, etc.): seguidores aproximados si aparecen en algún resultado, bio, tipo de contenido que publican, estilo/temas recurrentes, y frecuencia de publicación si es deducible.
+
+No tienes acceso a métricas privadas (impresiones, alcance, guardados) ni al texto real de los comentarios de sus publicaciones — Instagram no expone eso fuera de la cuenta autenticada del dueño. Nunca inventes un dato que no viste en la búsqueda; si algo no se encuentra, dilo explícitamente como "no encontrado en búsqueda pública" en vez de rellenarlo.
+
+Responde EXCLUSIVAMENTE un objeto JSON, sin texto adicional, sin markdown, sin backticks, con esta estructura exacta:
+{"cuentas":[{"usuario":"string sin @","rol":"propia o competencia","seguidores_aprox":"string, ej. '12K' o 'no encontrado en búsqueda pública'","bio":"string o 'no encontrado'","temas_contenido":"string describiendo qué publican","frecuencia_estimada":"string o 'no se pudo estimar'","fuente":"string breve, de dónde salió el dato"}],"patrones":["string", ...4 a 8 patrones comparando la cuenta propia contra la competencia, basados en lo encontrado"],"comentarios_sentimiento":"string, resumen de cualquier señal pública de sentimiento/reacción de comunidad encontrada (menciones, reseñas); si no hay nada público al respecto, dilo con claridad","auditoria_contenido":"string, evaluación honesta de consistencia visual, frecuencia, hashtags y estilo de caption de la cuenta propia frente a la competencia","mejoras":["string", ...4 a 8 recomendaciones concretas y accionables, basadas en lo encontrado, nada genérico de manual de marketing"]}`,
+        messages: [{ role: "user", content: userContent }],
+        tools: [{ type: "web_search_20250305", name: "web_search" }]
+      })
+    });
+
+    const data = await response.json();
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    parsed.fecha = new Date().toISOString();
+
+    await window.storage.set('auditoria-publica', JSON.stringify(parsed), false);
+    renderAudit(parsed);
+    statusEl.textContent = 'Listo.';
+  } catch(err){
+    console.error(err);
+    statusEl.textContent = 'No se pudo completar el análisis. Intenta de nuevo.';
+    statusEl.className = 'status err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderAudit(data){
+  document.getElementById('auditResult').style.display = 'block';
+
+  if(data.fecha){
+    const d = new Date(data.fecha);
+    document.getElementById('auditUpdated').textContent =
+      `Último análisis: ${d.toLocaleDateString('es-MX', {day:'numeric', month:'short', year:'numeric'})}`;
+  }
+
+  const accWrap = document.getElementById('auditAccounts');
+  accWrap.innerHTML = '';
+  (data.cuentas || []).forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'audit-account';
+    div.innerHTML = `
+      <div class="aa-user">@${c.usuario || ''}</div>
+      <div class="aa-role">${c.rol === 'propia' ? 'Cuenta propia' : 'Competencia'}</div>
+      <div class="aa-row"><strong>Seguidores aprox:</strong> ${c.seguidores_aprox || 'no encontrado'}</div>
+      <div class="aa-row"><strong>Bio:</strong> ${c.bio || 'no encontrado'}</div>
+      <div class="aa-row"><strong>Contenido:</strong> ${c.temas_contenido || ''}</div>
+      <div class="aa-row"><strong>Frecuencia:</strong> ${c.frecuencia_estimada || 'no se pudo estimar'}</div>
+      <div class="aa-source">Fuente: ${c.fuente || 'no especificada'}</div>
+    `;
+    accWrap.appendChild(div);
+  });
+
+  const patWrap = document.getElementById('auditPatterns');
+  patWrap.innerHTML = '';
+  (data.patrones || []).forEach(p=>{
+    const li = document.createElement('li');
+    li.textContent = p;
+    patWrap.appendChild(li);
+  });
+
+  document.getElementById('auditSentiment').textContent = data.comentarios_sentimiento || '';
+  document.getElementById('auditContent').textContent = data.auditoria_contenido || '';
+
+  const impWrap = document.getElementById('auditImprovements');
+  impWrap.innerHTML = '';
+  (data.mejoras || []).forEach(m=>{
+    const li = document.createElement('li');
+    li.textContent = m;
+    impWrap.appendChild(li);
+  });
+}
+
+document.getElementById('runAudit').addEventListener('click', runAudit);
+loadLastAudit();
+</script>
+</body>
+</html>
