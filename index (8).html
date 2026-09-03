@@ -1,0 +1,3586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INKBOT VIDEO — Fase 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;900&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#120f0e;
+    --ink-2:#1c1817;
+    --paper:#ede7dd;
+    --paper-dim:#a89f90;
+    --crimson:#b21e35;
+    --crimson-dim:#7a1526;
+    --gold:#c79a3d;
+    --jade:#2e6b58;
+    --jade-light:#4c8b76;
+    --line: rgba(237,231,221,0.14);
+    --line-strong: rgba(237,231,221,0.28);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Work Sans', sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:28px 18px 60px;
+  }
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:2px solid var(--line-strong);
+    padding-bottom:16px;
+    margin-bottom:24px;
+  }
+  .brand{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:28px;
+    letter-spacing:0.02em;
+    color:var(--paper);
+  }
+  .brand span{color:var(--crimson);}
+  .phase-tag{
+    font-size:12px;
+    color:var(--gold);
+    border:1px solid var(--gold);
+    border-radius:2px;
+    padding:3px 8px;
+    white-space:nowrap;
+  }
+  h2{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700;
+    font-size:20px;
+    margin:0 0 4px;
+    color:var(--paper);
+  }
+  .sub{
+    color:var(--paper-dim);
+    font-size:13.5px;
+    margin:0 0 16px;
+  }
+  section{margin-bottom:32px;}
+  label{
+    display:block;
+    font-size:13px;
+    color:var(--gold);
+    margin-bottom:6px;
+  }
+  input[type=text], textarea{
+    width:100%;
+    background:var(--ink-2);
+    border:1px solid var(--line-strong);
+    color:var(--paper);
+    border-radius:3px;
+    padding:11px 12px;
+    font-family:'Work Sans', sans-serif;
+    font-size:15px;
+    resize:vertical;
+  }
+  input[type=text]:focus, textarea:focus{
+    outline:none;
+    border-color:var(--jade-light);
+  }
+  textarea{min-height:64px;}
+  .field{margin-bottom:14px;}
+  .clip{
+    position:relative;
+    border:1px solid var(--line);
+    border-left:3px solid var(--jade);
+    border-radius:3px;
+    padding:14px 14px 8px;
+    margin-bottom:12px;
+    background:rgba(237,231,221,0.02);
+  }
+  .clip-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .clip-num{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:22px;
+    color:var(--jade-light);
+  }
+  .remove-clip{
+    background:none;
+    border:none;
+    color:var(--paper-dim);
+    font-size:13px;
+    cursor:pointer;
+    padding:4px 8px;
+  }
+  .remove-clip:hover{color:var(--crimson);}
+  .add-clip{
+    width:100%;
+    background:none;
+    border:1px dashed var(--line-strong);
+    color:var(--paper-dim);
+    border-radius:3px;
+    padding:12px;
+    font-size:14px;
+    cursor:pointer;
+    font-family:'Work Sans', sans-serif;
+  }
+  .add-clip:hover{border-color:var(--gold); color:var(--gold);}
+  .btn-main{
+    width:100%;
+    background:var(--crimson);
+    color:var(--paper);
+    border:none;
+    border-radius:3px;
+    padding:15px;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700;
+    font-size:18px;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .btn-main:hover{background:var(--crimson-dim);}
+  .btn-main:disabled{background:var(--ink-2); color:var(--paper-dim); cursor:default;}
+  .caption-style-picker{margin-bottom:16px;}
+  .csp-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .csp-card{
+    border:1px solid var(--line-strong);
+    border-radius:6px;
+    overflow:hidden;
+    cursor:pointer;
+    background:var(--ink-2);
+    text-align:left;
+    padding:0;
+    font-family:'Work Sans', sans-serif;
+  }
+  .csp-card.active{
+    border-color:var(--gold);
+    box-shadow:0 0 0 1px var(--gold);
+  }
+  .csp-card canvas{
+    width:100%;
+    display:block;
+    background:#0a0908;
+  }
+  .csp-card .csp-label{
+    padding:7px 9px 2px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--paper);
+  }
+  .csp-card .csp-desc{
+    padding:0 9px 9px;
+    font-size:11px;
+    color:var(--paper-dim);
+    line-height:1.3;
+  }
+  .status{
+    font-size:13px;
+    color:var(--gold);
+    margin-top:10px;
+    min-height:16px;
+  }
+  .status.err{color:var(--crimson);}
+  #results{display:none;}
+  .hook{
+    border:1px solid var(--gold);
+    border-radius:3px;
+    padding:14px;
+    margin-bottom:20px;
+  }
+  .hook-label{font-size:12px; color:var(--gold); margin-bottom:6px;}
+  .hook-text{font-size:16px; font-weight:500;}
+  .result-clip{
+    display:flex;
+    gap:12px;
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .result-num{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:26px;
+    color:var(--jade-light);
+    min-width:32px;
+  }
+  .result-body .rc-label{font-size:12.5px; color:var(--paper-dim); margin-bottom:4px;}
+  .result-body .rc-narr{font-size:15px; margin-bottom:6px;}
+  .result-body .rc-onscreen{
+    display:inline-block;
+    font-size:12.5px;
+    color:var(--gold);
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:2px 7px;
+  }
+  .copy-block{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:14px;
+    margin-bottom:14px;
+    position:relative;
+  }
+  .copy-block .cb-label{font-size:12px; color:var(--gold); margin-bottom:8px;}
+  .copy-block p{margin:0; font-size:14.5px; white-space:pre-wrap;}
+  .copy-btn{
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:none;
+    border:1px solid var(--line-strong);
+    color:var(--paper-dim);
+    border-radius:2px;
+    padding:5px 10px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{border-color:var(--jade-light); color:var(--jade-light);}
+  .hashtags{display:flex; flex-wrap:wrap; gap:6px;}
+  .tag{
+    font-size:13px;
+    color:var(--jade-light);
+    border:1px solid var(--jade);
+    border-radius:20px;
+    padding:4px 11px;
+  }
+  .schedule{
+    display:flex;
+    gap:14px;
+    align-items:baseline;
+    flex-wrap:wrap;
+  }
+  .schedule .big{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:24px;
+    color:var(--paper);
+  }
+  .schedule .why{font-size:13px; color:var(--paper-dim); flex-basis:100%;}
+  .tip-block{
+    border-left:3px solid var(--crimson);
+    padding:4px 0 4px 14px;
+    font-size:14.5px;
+  }
+  details{
+    margin-top:28px;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+  summary{
+    cursor:pointer;
+    color:var(--paper-dim);
+    font-size:13.5px;
+  }
+  .hist-item{
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    font-size:13.5px;
+  }
+  .hist-item:hover{color:var(--gold);}
+  .hist-item .hd{color:var(--paper-dim); font-size:12px;}
+  .p3-clip{
+    border:1px solid var(--line);
+    border-left:3px solid var(--crimson);
+    border-radius:3px;
+    padding:12px 14px;
+    margin-bottom:10px;
+  }
+  .p3-clip .p3-label{font-size:13px; margin-bottom:8px;}
+  .p3-clip .p3-file-status{font-size:12px; color:var(--paper-dim); margin-bottom:8px;}
+  .p3-clip .p3-file-status.ok{color:var(--jade-light);}
+  .p3-trim{display:flex; gap:10px;}
+  .p3-trim div{flex:1;}
+  .p3-trim label{font-size:11.5px;}
+  .p3-trim input{padding:8px 10px; font-size:13.5px;}
+  .fase-tracker{
+    display:flex;
+    gap:6px;
+    margin-bottom:28px;
+    overflow-x:auto;
+    padding-bottom:4px;
+  }
+  .ft-item{
+    flex:1 0 auto;
+    min-width:70px;
+    text-align:center;
+    padding:8px 4px;
+    border-radius:2px;
+    border:1px solid var(--line);
+  }
+  .ft-num{
+    display:block;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:16px;
+  }
+  .ft-label{display:block; font-size:10.5px; margin-top:1px;}
+  .ft-current{border-color:var(--crimson); background:rgba(178,30,53,0.12);}
+  .ft-current .ft-num{color:var(--crimson);}
+  .ft-current .ft-label{color:var(--paper);}
+  .ft-unlocked{border-color:var(--jade-light);}
+  .ft-unlocked .ft-num{color:var(--jade-light);}
+  .ft-unlocked .ft-label{color:var(--paper-dim);}
+  .ft-locked, .ft-future{opacity:0.4;}
+  .ft-locked .ft-num, .ft-future .ft-num{color:var(--paper-dim);}
+  .ft-locked .ft-label, .ft-future .ft-label{color:var(--paper-dim);}
+  .phase2{border-top:1px solid var(--line-strong); padding-top:20px; margin-top:8px;}
+  select{
+    width:100%;
+    background:var(--ink-2);
+    border:1px solid var(--line-strong);
+    color:var(--paper);
+    border-radius:3px;
+    padding:11px 12px;
+    font-family:'Work Sans', sans-serif;
+    font-size:15px;
+  }
+  .narr-clip{
+    border:1px solid var(--line);
+    border-left:3px solid var(--gold);
+    border-radius:3px;
+    padding:12px 14px;
+    margin-bottom:10px;
+  }
+  .narr-clip .nc-label{font-size:12.5px; color:var(--paper-dim); margin-bottom:8px;}
+  .narr-clip audio{width:100%; height:34px;}
+  .narr-clip a.dl{
+    display:inline-block;
+    margin-top:8px;
+    font-size:12.5px;
+    color:var(--jade-light);
+    text-decoration:none;
+    border:1px solid var(--jade);
+    border-radius:2px;
+    padding:4px 10px;
+  }
+  .trends-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+  .trends-updated{font-size:12px; color:var(--paper-dim);}
+  #refreshTrends{width:auto; padding:9px 14px; font-size:13px;}
+  .trend-block{margin-bottom:16px;}
+  .trend-label{font-size:12px; color:var(--gold); margin-bottom:8px;}
+  .trend-text{font-size:14.5px; margin:0;}
+  .trend-sound{
+    border:1px solid var(--line);
+    border-left:3px solid var(--jade);
+    border-radius:3px;
+    padding:9px 12px;
+    margin-bottom:8px;
+  }
+  .trend-sound .ts-name{font-size:14px; font-weight:500;}
+  .trend-sound .ts-use{font-size:12.5px; color:var(--paper-dim); margin-top:2px;}
+  .audit-list{margin:0; padding-left:18px; font-size:14.5px;}
+  .audit-list li{margin-bottom:8px;}
+  .audit-account{
+    border:1px solid var(--line);
+    border-left:3px solid var(--gold);
+    border-radius:3px;
+    padding:10px 12px;
+    margin-bottom:8px;
+  }
+  .audit-account .aa-user{font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:15px;}
+  .audit-account .aa-role{font-size:11px; color:var(--paper-dim); margin-bottom:6px;}
+  .audit-account .aa-row{font-size:13px; margin-top:3px;}
+  .audit-account .aa-source{font-size:11.5px; color:var(--paper-dim); margin-top:6px; font-style:italic;}
+  .competitor-row{display:flex; gap:8px; margin-bottom:8px;}
+  .competitor-row input{flex:1;}
+  .competitor-row button{
+    background:none;
+    border:1px solid var(--line-strong);
+    color:var(--paper-dim);
+    border-radius:3px;
+    padding:0 12px;
+    cursor:pointer;
+    font-size:13px;
+    font-family:'Work Sans', sans-serif;
+  }
+  .competitor-row button:hover{border-color:var(--crimson); color:var(--crimson);}
+  .roadmap{
+    margin-top:36px;
+    border-top:1px solid var(--line-strong);
+    padding-top:18px;
+  }
+  .rm-item{display:flex; gap:12px; padding:8px 0; font-size:13.5px; color:var(--paper-dim);}
+  .rm-num{color:var(--gold); font-family:'Big Shoulders Display'; font-weight:700; min-width:20px;}
+  .rm-current{color:var(--paper);}
+  .rm-item + .rm-item{border-top:1px solid var(--line);}
+
+  header{border-bottom:none; padding-bottom:0; margin-bottom:18px;}
+  .settings-toggle{
+    background:none;
+    border:1px solid var(--line-strong);
+    color:var(--paper-dim);
+    border-radius:2px;
+    padding:6px 12px;
+    font-family:'Work Sans', sans-serif;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .settings-toggle:hover{border-color:var(--gold); color:var(--gold);}
+
+  .settings-panel{
+    border:1px solid var(--line-strong);
+    border-radius:3px;
+    padding:0 16px;
+    margin-bottom:22px;
+    background:rgba(237,231,221,0.02);
+  }
+  .settings-panel summary{
+    padding:13px 0;
+    font-size:13.5px;
+    color:var(--gold);
+    list-style:none;
+  }
+  .settings-panel summary::-webkit-details-marker{display:none;}
+  .settings-panel summary::before{content:'+ '; color:var(--paper-dim);}
+  .settings-panel[open] summary::before{content:'– ';}
+  .settings-panel[open] summary{border-bottom:1px solid var(--line); margin-bottom:14px;}
+  .settings-panel .sub{margin-top:0;}
+  .settings-panel > div.field:last-of-type{margin-bottom:8px;}
+  .settings-panel{padding-bottom:2px;}
+  .settings-panel[open]{padding-bottom:16px;}
+
+  .main-tabs{
+    display:flex;
+    gap:2px;
+    margin-bottom:28px;
+    border-bottom:2px solid var(--line-strong);
+  }
+  .tab-btn{
+    flex:1;
+    background:none;
+    border:none;
+    border-bottom:3px solid transparent;
+    color:var(--paper-dim);
+    padding:12px 8px 14px;
+    cursor:pointer;
+    font-family:'Work Sans', sans-serif;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  .tab-btn .tab-name{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700;
+    font-size:15.5px;
+    color:var(--paper-dim);
+  }
+  .tab-btn .tab-hint{font-size:11px; color:var(--paper-dim); opacity:0.75;}
+  .tab-btn:nth-child(1):hover .tab-name, .tab-btn:nth-child(1).active .tab-name{color:var(--jade-light);}
+  .tab-btn:nth-child(2):hover .tab-name, .tab-btn:nth-child(2).active .tab-name{color:var(--crimson);}
+  .tab-btn:nth-child(3):hover .tab-name, .tab-btn:nth-child(3).active .tab-name{color:var(--gold);}
+  .tab-btn.active{border-bottom-color:currentColor;}
+  .tab-btn:nth-child(1).active{color:var(--jade-light);}
+  .tab-btn:nth-child(2).active{color:var(--crimson);}
+  .tab-btn:nth-child(3).active{color:var(--gold);}
+  .tab-btn.active .tab-hint{color:var(--paper);}
+
+  /* ---------- Asistente flotante ---------- */
+  .assistant-fab{
+    position:fixed;
+    right:18px;
+    bottom:18px;
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    background:var(--crimson);
+    color:var(--paper);
+    border:none;
+    box-shadow:0 4px 14px rgba(0,0,0,0.45);
+    cursor:pointer;
+    z-index:500;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .assistant-fab:hover{background:var(--crimson-dim);}
+  .assistant-fab svg{width:26px; height:26px;}
+  .assistant-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(8,6,5,0.72);
+    z-index:600;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .assistant-overlay[hidden]{display:none;}
+  .assistant-panel{
+    width:100%;
+    max-width:640px;
+    max-height:86vh;
+    background:var(--ink);
+    border-top:2px solid var(--line-strong);
+    border-left:1px solid var(--line-strong);
+    border-right:1px solid var(--line-strong);
+    border-radius:12px 12px 0 0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .assistant-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    border-bottom:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .assistant-title{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:900;
+    font-size:18px;
+  }
+  .assistant-title span{color:var(--crimson);}
+  .assistant-close{
+    background:none;
+    border:none;
+    color:var(--paper-dim);
+    font-size:22px;
+    line-height:1;
+    cursor:pointer;
+    padding:4px 8px;
+  }
+  .assistant-close:hover{color:var(--paper);}
+  .assistant-body{
+    flex:1;
+    overflow-y:auto;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .assistant-msg{
+    max-width:86%;
+    padding:10px 13px;
+    border-radius:10px;
+    font-size:14.5px;
+    line-height:1.45;
+    white-space:pre-wrap;
+  }
+  .assistant-msg.assistant{
+    align-self:flex-start;
+    background:var(--ink-2);
+    border:1px solid var(--line-strong);
+    border-bottom-left-radius:2px;
+  }
+  .assistant-msg.user{
+    align-self:flex-end;
+    background:var(--jade);
+    color:var(--paper);
+    border-bottom-right-radius:2px;
+  }
+  .assistant-msg.hint{
+    align-self:center;
+    color:var(--paper-dim);
+    font-size:12.5px;
+    background:none;
+    border:none;
+    padding:2px;
+  }
+  .assistant-summary{
+    align-self:stretch;
+    border:1px solid var(--gold);
+    border-radius:8px;
+    padding:12px 13px;
+    font-size:13.5px;
+    background:rgba(199,154,61,0.08);
+  }
+  .assistant-summary h4{
+    margin:0 0 8px;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-size:15px;
+    color:var(--gold);
+  }
+  .assistant-summary ul{margin:6px 0 0; padding-left:18px;}
+  .assistant-apply{
+    margin-top:10px;
+    width:100%;
+    background:var(--gold);
+    color:var(--ink);
+    border:none;
+    border-radius:3px;
+    padding:11px;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+  }
+  .assistant-apply:hover{opacity:0.88;}
+  .assistant-input-row{
+    display:flex;
+    gap:8px;
+    padding:12px 16px 16px;
+    border-top:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .assistant-input-row textarea{
+    flex:1;
+    min-height:42px;
+    max-height:110px;
+  }
+  .assistant-send{
+    background:var(--crimson);
+    color:var(--paper);
+    border:none;
+    border-radius:3px;
+    padding:0 18px;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .assistant-send:hover{background:var(--crimson-dim);}
+  .assistant-send:disabled{background:var(--ink-2); color:var(--paper-dim); cursor:default;}
+  .assistant-status{
+    padding:0 16px 8px;
+    font-size:12.5px;
+    color:var(--paper-dim);
+    flex-shrink:0;
+  }
+  .assistant-status.err{color:var(--crimson);}
+</style>
+</head>
+<body>
+
+<button type="button" class="assistant-fab" id="assistantFab" title="Asistente del video">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 4h16v11H7l-3 3V4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <circle cx="9" cy="9.5" r="1" fill="currentColor"/>
+    <circle cx="12" cy="9.5" r="1" fill="currentColor"/>
+    <circle cx="15" cy="9.5" r="1" fill="currentColor"/>
+  </svg>
+</button>
+
+<div class="assistant-overlay" id="assistantOverlay" hidden>
+  <div class="assistant-panel">
+    <div class="assistant-head">
+      <div class="assistant-title">ASISTENTE <span>INKBOT</span></div>
+      <button type="button" class="assistant-close" id="assistantClose">&times;</button>
+    </div>
+    <div class="assistant-body" id="assistantBody"></div>
+    <div class="assistant-status" id="assistantStatus"></div>
+    <div class="assistant-input-row">
+      <textarea id="assistantInput" placeholder="Cuéntame de qué va a ir el video..."></textarea>
+      <button type="button" class="assistant-send" id="assistantSend">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header>
+    <div class="brand">INKBOT <span>VIDEO</span></div>
+    <button type="button" class="settings-toggle" id="settingsToggle">Configuración</button>
+  </header>
+
+  <details id="settingsPanel" class="settings-panel">
+    <summary>API key de Anthropic</summary>
+    <p class="sub">Esta app corre fuera de Claude.ai (la abres desde GitHub), así que necesita tu propia clave para generar guion, tendencias y auditoría. Se guarda solo en este navegador, nunca sale de aquí ni se sube a GitHub.</p>
+    <div class="field">
+      <label>Tu API key de Anthropic (empieza con sk-ant-...)</label>
+      <input type="password" id="anthropicKey" placeholder="sk-ant-...">
+    </div>
+    <div class="status" id="anthropicKeyStatus"></div>
+  </details>
+
+  <nav class="main-tabs" id="mainTabs">
+    <button type="button" class="tab-btn" data-tab="trends"><span class="tab-name">Tendencias semanales</span><span class="tab-hint">Sonidos y hashtags de la semana</span></button>
+    <button type="button" class="tab-btn" data-tab="content"><span class="tab-name">Creación de contenido</span><span class="tab-hint">Guion, voz y video</span></button>
+    <button type="button" class="tab-btn" data-tab="audit"><span class="tab-name">Auditoría pública</span><span class="tab-hint">Tu cuenta vs. competencia</span></button>
+  </nav>
+
+  <div class="tab-panel" data-panel="trends" hidden>
+  <section id="trendsSection">
+    <h2>Tendencias de la semana</h2>
+    <p class="sub">Sonidos y hashtags que están pegando ahora mismo en el nicho de tatuajes en Instagram y TikTok. Se busca sola una vez por semana y se usa como contexto extra al generar el guion — pulsa el botón si quieres forzar una actualización ahora.</p>
+    <div class="trends-head">
+      <span class="trends-updated" id="trendsUpdated"></span>
+      <button class="add-clip" id="refreshTrends">Actualizar tendencias</button>
+    </div>
+    <div class="status" id="trendsStatus"></div>
+    <div id="trendsResult" style="display:none;">
+      <div class="trend-block">
+        <div class="trend-label">Sonidos pegando</div>
+        <div id="trendsSounds"></div>
+      </div>
+      <div class="trend-block">
+        <div class="trend-label">Hashtags pegando</div>
+        <div class="hashtags" id="trendsTags"></div>
+      </div>
+      <div class="trend-block">
+        <div class="trend-label">Formato de gancho que está funcionando</div>
+        <p class="trend-text" id="trendsFormato"></p>
+      </div>
+      <div class="trend-block">
+        <div class="trend-label">Resumen</div>
+        <p class="trend-text" id="trendsResumen"></p>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div class="tab-panel" data-panel="content" hidden>
+
+  <div class="fase-tracker" id="faseTracker">
+    <div class="ft-item ft-current" data-fase="1"><span class="ft-num">01</span><span class="ft-label">Guion</span></div>
+    <div class="ft-item ft-locked" data-fase="2"><span class="ft-num">02</span><span class="ft-label">Voz</span></div>
+    <div class="ft-item ft-locked" data-fase="3"><span class="ft-num">03</span><span class="ft-label">Video</span></div>
+  </div>
+
+  <section>
+    <h2>De qué va este video</h2>
+    <p class="sub">El tema y el contexto que quieres que se note (ciudad, historia, estilo).</p>
+    <div class="field">
+      <label>Tema</label>
+      <input type="text" id="tema" placeholder="Ej. Sirena estilo neo-japonés" value="Sirena estilo neo-japonés">
+    </div>
+    <div class="field">
+      <label>Contexto que quieres que mencione la narración</label>
+      <textarea id="contexto" placeholder="Ej. Soy tatuador de Orizaba, este diseño mezcla técnica tradicional japonesa con mi paleta de colores">Soy tatuador de Orizaba, Veracruz. Este diseño mezcla estilo neo-japonés con mi paleta de colores: rojo carmesí, dorado, jade y negro con contraste de líneas muy marcado.</textarea>
+    </div>
+    <div class="field">
+      <label>Duración objetivo del video final</label>
+      <select id="targetDuration">
+        <option value="30">~30s — rápido</option>
+        <option value="60" selected>~60s — recomendado para viral</option>
+        <option value="90">~90s — más historia</option>
+        <option value="120">~120s — formato largo</option>
+      </select>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tus clips</h2>
+    <p class="sub">En el orden en que van. Describe qué muestra cada uno — la IA escribe la narración a partir de esto.</p>
+    <div id="clips"></div>
+    <button class="add-clip" id="addClip">+ Agregar clip</button>
+  </section>
+
+  <button class="btn-main" id="generate">Generar guion</button>
+  <button class="add-clip" id="assembleRaw" style="margin-top:10px;">Ensamblar video sin guion ni voz</button>
+  <p class="sub" style="margin-top:6px;">"Generar guion" arma el video completo: narración con voz, texto en pantalla y subtítulos. "Ensamblar video sin guion ni voz" solo corta y edita tus clips con los mismos efectos y transiciones, sin narración ni subtítulos.</p>
+  <div class="status" id="status"></div>
+
+  <div id="results" style="display:none;">
+    <div class="hook">
+      <div class="hook-label">Gancho (primeros 2 segundos)</div>
+      <div class="hook-text" id="r-hook"></div>
+    </div>
+
+    <h2>Guion por clip</h2>
+    <div id="r-clips"></div>
+
+    <h2 style="margin-top:24px;">Captions</h2>
+    <div class="copy-block">
+      <div class="cb-label">Instagram</div>
+      <button class="copy-btn" data-copy="r-ig">Copiar</button>
+      <p id="r-ig"></p>
+    </div>
+    <div class="copy-block">
+      <div class="cb-label">TikTok</div>
+      <button class="copy-btn" data-copy="r-tt">Copiar</button>
+      <p id="r-tt"></p>
+    </div>
+
+    <h2>Hashtags</h2>
+    <div class="copy-block">
+      <button class="copy-btn" data-copy="r-tags-text">Copiar</button>
+      <div class="hashtags" id="r-tags"></div>
+      <p id="r-tags-text" style="display:none;"></p>
+    </div>
+
+    <h2>Cuándo publicar</h2>
+    <div class="copy-block">
+      <div class="schedule">
+        <div class="big" id="r-day"></div>
+        <div class="big" id="r-time"></div>
+        <div class="why" id="r-why"></div>
+      </div>
+    </div>
+
+    <h2>Tip viral</h2>
+    <div class="tip-block" id="r-tip"></div>
+  </div>
+
+  <div class="phase2" id="phase2Section">
+    <h2>Narración con voz</h2>
+    <p class="sub" id="phase2Locked">Genera tu guion arriba primero — esta sección se activa en cuanto lo tengas.</p>
+    <p class="sub" id="phase2Unlocked" style="display:none;">Usa tu clave de ElevenLabs para generar el audio de la narración con una voz real. Tu clave solo se usa aquí en tu navegador, en esta sesión — no se guarda en ningún lado.</p>
+
+    <div class="field">
+      <label>Tu API key de ElevenLabs</label>
+      <input type="password" id="elKey" placeholder="sk_..." disabled>
+    </div>
+    <div class="field">
+      <label>Voz</label>
+      <select id="elVoice" disabled>
+        <option>Carga tu clave y pulsa "Cargar voces"</option>
+      </select>
+    </div>
+    <button class="add-clip" id="loadVoices" disabled>Cargar voces</button>
+    <button class="btn-main" id="genNarration" style="margin-top:10px;" disabled>Generar narración</button>
+    <div class="status" id="narrStatus"></div>
+
+    <div id="narrClips"></div>
+    <button class="add-clip" id="downloadFull" style="display:none;">Descargar narración completa (un solo audio)</button>
+  </div>
+
+  <div class="phase2" id="phase3Section">
+    <h2>Ensamblado de video</h2>
+    <p class="sub" id="phase3Locked">Genera la narración en la Fase 2 primero — esta sección se activa en cuanto termine.</p>
+    <p class="sub" id="phase3Unlocked" style="display:none;">Sube el clip real de cada parte (en "Clip de referencia" arriba) y arma el video: la app detecta sola los mejores momentos de cada clip — si le tocó poco tiempo usa uno, si le tocó más lo corta en varias micro-tomas rápidas del mismo material para armar un mini-montaje dinámico — mete la narración y los subtítulos siempre en la parte inferior del video, y une todo con transiciones — una de apertura, una de cierre, y entre clip y clip elige sola, de un catálogo de ~30 estilos, la que mejor le queda a cada corte, sin repetir la misma dos veces seguidas. La duración total se ajusta a lo que elegiste en "Duración objetivo del video final". Formato vertical 9:16, salida en WebM.</p>
+
+    <div id="p3Clips"></div>
+
+    <div class="caption-style-picker">
+      <label>Estilo de subtítulos</label>
+      <div class="csp-grid" id="cspGrid"></div>
+    </div>
+
+    <button class="btn-main" id="assembleVideo" style="margin-top:10px;" disabled>Ensamblar video</button>
+    <div class="status" id="p3Status"></div>
+    <video id="p3Preview" controls style="width:100%; margin-top:14px; border-radius:3px; border:1px solid var(--line-strong); display:none;"></video>
+    <a class="add-clip" id="p3Download" style="display:none; text-align:center; text-decoration:none;" download="tattoo-video.webm">Descargar video</a>
+  </div>
+
+  <video id="p3VideoA" muted playsinline style="position:fixed; opacity:0; pointer-events:none; width:2px; height:2px; top:-9999px; left:-9999px;"></video>
+  <video id="p3VideoB" muted playsinline style="position:fixed; opacity:0; pointer-events:none; width:2px; height:2px; top:-9999px; left:-9999px;"></video>
+
+  <details id="histDetails">
+    <summary>Guiones anteriores</summary>
+    <div id="histList"></div>
+  </details>
+
+  </div>
+
+  <div class="tab-panel" data-panel="audit" hidden>
+  <div id="phase6Section">
+    <h2>Auditoría pública</h2>
+    <p class="sub">Analiza lo público de tu cuenta y de tu competencia por búsqueda web: bio, temas de contenido, frecuencia y patrones. No incluye métricas privadas (impresiones, alcance, comentarios reales) porque Instagram no las expone fuera de tu propia cuenta autenticada — donde falte un dato público, la app lo dice en vez de inventarlo.</p>
+
+    <div class="field">
+      <label>Tu usuario de Instagram</label>
+      <input type="text" id="auditSelf" placeholder="@tuusuario">
+    </div>
+
+    <label>Competencia (opcional)</label>
+    <div id="auditCompetitors"></div>
+    <button class="add-clip" id="addCompetitor">+ Agregar competencia</button>
+
+    <button class="btn-main" id="runAudit" style="margin-top:14px;">Analizar</button>
+    <div class="status" id="auditStatus"></div>
+    <div class="trends-updated" id="auditUpdated" style="margin-top:6px;"></div>
+
+    <div id="auditResult" style="display:none; margin-top:18px;">
+      <h2 style="margin-top:20px;">Cuentas analizadas</h2>
+      <div id="auditAccounts"></div>
+
+      <h2 style="margin-top:20px;">Patrones detectados</h2>
+      <ul id="auditPatterns" class="audit-list"></ul>
+
+      <h2 style="margin-top:20px;">Comentarios y sentimiento</h2>
+      <p class="trend-text" id="auditSentiment"></p>
+
+      <h2 style="margin-top:20px;">Auditoría de contenido</h2>
+      <p class="trend-text" id="auditContent"></p>
+
+      <h2 style="margin-top:20px;">Mejoras sugeridas</h2>
+      <ul id="auditImprovements" class="audit-list"></ul>
+    </div>
+  </div>
+  </div>
+
+  <details class="roadmap">
+    <summary>Hoja de ruta</summary>
+    <div class="rm-item"><span class="rm-num">01</span><span>Guion: narración, captions, hashtags y calendario a partir de tus clips descritos.</span></div>
+    <div class="rm-item"><span class="rm-num">02</span><span>Voz narrada automática: convertir el guion en audio con una voz elegida, ya cronometrado por clip.</span></div>
+    <div class="rm-item"><span class="rm-num">03</span><span>Ensamblado automático de video: subir los clips y que la app los corte, una con la narración y agregue el texto en pantalla.</span></div>
+
+    <div class="rm-item"><span class="rm-num">04</span><span>Selección inteligente del mejor momento dentro de cada clip crudo, sin marcarlo tú a mano.</span></div>
+    <div class="rm-item"><span class="rm-num">05</span><span>Tendencias: búsqueda semanal de sonidos y hashtags que están pegando en el nicho tattoo, para alimentar el gancho.</span></div>
+    <div class="rm-item"><span class="rm-num">06</span><span>Auditoría pública: análisis de tu cuenta y competencia por búsqueda web — patrones, sentimiento público y mejoras.</span></div>
+    <div class="rm-item"><span class="rm-num">07</span><span>Publicación directa: programar y publicar a Instagram y TikTok sin salir de la app.</span></div>
+  </details>
+
+</div>
+
+<script>
+// ---------- Almacenamiento local (reemplaza window.storage, que solo existe dentro de Claude.ai) ----------
+const localStore = {
+  async get(key){
+    const raw = localStorage.getItem('inkbot_video_' + key);
+    if(raw === null) return null;
+    return { key, value: raw };
+  },
+  async set(key, value){
+    localStorage.setItem('inkbot_video_' + key, value);
+    return { key, value };
+  }
+};
+
+let clipCount = 0;
+
+function addClipRow(label='', desc=''){
+  clipCount++;
+  const id = clipCount;
+  const div = document.createElement('div');
+  div.className = 'clip';
+  div.dataset.id = id;
+  div.innerHTML = `
+    <div class="clip-head">
+      <div class="clip-num">${String(document.querySelectorAll('.clip').length+1).padStart(2,'0')}</div>
+      <button class="remove-clip" onclick="removeClip(${id})">Quitar</button>
+    </div>
+    <div class="field">
+      <label>Qué es</label>
+      <input type="text" class="clip-label" value="${label}" placeholder="Ej. Pegado de la plantilla">
+    </div>
+    <div class="field">
+      <label>Clip de referencia (opcional — solo para verlo mientras escribes, no se sube a ningún lado)</label>
+      <input type="file" class="clip-file" accept="video/*">
+      <video class="clip-preview" controls style="display:none; width:100%; margin-top:8px; border-radius:3px; border:1px solid var(--line-strong);"></video>
+    </div>
+    <div class="field">
+      <label>Qué muestra</label>
+      <textarea class="clip-desc" placeholder="Ej. Se ve cómo limpio la piel y transfiero el diseño de la sirena">${desc}</textarea>
+    </div>
+  `;
+  div.querySelector('.clip-file').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    const preview = div.querySelector('.clip-preview');
+    if(file){
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    }
+  });
+  document.getElementById('clips').appendChild(div);
+}
+
+function removeClip(id){
+  document.querySelector(`.clip[data-id="${id}"]`).remove();
+  renumberClips();
+}
+
+function renumberClips(){
+  document.querySelectorAll('.clip').forEach((el, i)=>{
+    el.querySelector('.clip-num').textContent = String(i+1).padStart(2,'0');
+  });
+}
+
+// ---------- Fase 5: Tendencias ----------
+let currentTrends = null;
+const TREND_MAX_AGE_DAYS = 7;
+
+function daysSince(iso){
+  return (Date.now() - new Date(iso).getTime()) / (1000*60*60*24);
+}
+
+async function loadTrends(){
+  try{
+    const existing = await localStore.get('tendencias-tattoo');
+    if(existing && existing.value){
+      const data = JSON.parse(existing.value);
+      currentTrends = data;
+      renderTrends(data);
+      if(daysSince(data.fecha) >= TREND_MAX_AGE_DAYS){
+        fetchTrends(); // se venció la semana, se refresca sola
+      }
+      return;
+    }
+  } catch(e){ /* no hay tendencias guardadas todavía */ }
+  fetchTrends();
+}
+
+async function fetchTrends(){
+  const btn = document.getElementById('refreshTrends');
+  const statusEl = document.getElementById('trendsStatus');
+
+  const setTrendsStatus = (msg, isErr=false)=>{
+    statusEl.textContent = msg;
+    statusEl.className = 'status' + (isErr ? ' err' : '');
+  };
+  if(!requireAnthropicKey(setTrendsStatus)) return;
+
+  btn.disabled = true;
+  statusEl.textContent = 'Buscando qué está pegando esta semana en el nicho tattoo...';
+  statusEl.className = 'status';
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: anthropicHeaders(),
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1200,
+        system: `Eres un investigador de tendencias de redes sociales especializado en el nicho de tatuajes (tattoo artists) en Instagram Reels y TikTok. Usa la búsqueda web para encontrar qué está pegando AHORA MISMO, esta semana: sonidos/audios en tendencia que se están usando en contenido de tatuadores o de nichos afines (proceso creativo, oficios, arte, transformación), qué formato de gancho está funcionando, y qué hashtags tienen más movimiento. Responde EXCLUSIVAMENTE un objeto JSON, sin texto adicional, sin markdown, sin backticks, con esta estructura exacta:
+{"sonidos":[{"nombre":"string, nombre o descripción identificable del sonido/audio","uso":"string, cómo se está usando o por qué pega en contenido de oficio/arte/tattoo"}],"hashtags":["string", ...10 a 15 hashtags reales y vigentes, mezcla de nicho tattoo y de tendencia general del momento],"formato_gancho":"string, 1-2 frases sobre qué tipo de gancho o estructura de los primeros segundos está funcionando esta semana","resumen":"string, 1-2 frases de resumen general de la semana"}
+Incluye entre 3 y 6 sonidos. Basa todo en resultados reales de tu búsqueda — si no encuentras algo específico del nicho tattoo, usa lo más cercano de nichos de oficio/arte/transformación y dilo en el campo correspondiente. No inventes nombres de sonidos que no aparezcan en tu búsqueda.`,
+        messages: [{ role: "user", content: "Busca qué sonidos, formatos de gancho y hashtags están pegando esta semana en Instagram y TikTok dentro del nicho de tatuajes." }],
+        tools: [{ type: "web_search_20250305", name: "web_search" }]
+      })
+    });
+
+    const data = await response.json();
+    if(!response.ok){
+      throw new Error(data?.error?.message || `Error ${response.status} al llamar a Anthropic. Revisa tu API key.`);
+    }
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    parsed.fecha = new Date().toISOString();
+
+    currentTrends = parsed;
+    await localStore.set('tendencias-tattoo', JSON.stringify(parsed));
+    renderTrends(parsed);
+    statusEl.textContent = 'Tendencias actualizadas.';
+  } catch(err){
+    console.error(err);
+    statusEl.textContent = err.message || 'No se pudieron buscar las tendencias. Intenta de nuevo.';
+    statusEl.className = 'status err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderTrends(data){
+  document.getElementById('trendsResult').style.display = 'block';
+
+  const d = new Date(data.fecha);
+  document.getElementById('trendsUpdated').textContent =
+    `Actualizado: ${d.toLocaleDateString('es-MX', {day:'numeric', month:'short', year:'numeric'})}`;
+
+  const soundsWrap = document.getElementById('trendsSounds');
+  soundsWrap.innerHTML = '';
+  (data.sonidos || []).forEach(s=>{
+    const div = document.createElement('div');
+    div.className = 'trend-sound';
+    div.innerHTML = `<div class="ts-name">${s.nombre || ''}</div><div class="ts-use">${s.uso || ''}</div>`;
+    soundsWrap.appendChild(div);
+  });
+
+  const tagsWrap = document.getElementById('trendsTags');
+  tagsWrap.innerHTML = '';
+  (data.hashtags || []).forEach(t=>{
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = t.startsWith('#') ? t : '#'+t;
+    tagsWrap.appendChild(span);
+  });
+
+  document.getElementById('trendsFormato').textContent = data.formato_gancho || '';
+  document.getElementById('trendsResumen').textContent = data.resumen || '';
+}
+
+document.getElementById('refreshTrends').addEventListener('click', ()=>fetchTrends());
+loadTrends();
+
+document.getElementById('addClip').addEventListener('click', ()=>addClipRow());
+addClipRow('Pegado de la plantilla','Limpio la piel y transfiero el diseño de la sirena, se ve el papel carbón despegándose y el contorno ya marcado sobre la piel.');
+addClipRow('Tatuando','Estoy pasando la máquina sobre las líneas del contorno, se ve el detalle del trazo y los colores crimson y jade que voy metiendo.');
+
+// ---------- Navegación por pestañas ----------
+(function initTabs(){
+  const TAB_STORAGE = 'inkbot_video_active_tab';
+  const btns = Array.from(document.querySelectorAll('.tab-btn'));
+  const panels = Array.from(document.querySelectorAll('.tab-panel'));
+
+  function activate(tabName){
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
+    panels.forEach(p => { p.hidden = p.dataset.panel !== tabName; });
+    try{ localStorage.setItem(TAB_STORAGE, tabName); }catch(e){}
+  }
+
+  btns.forEach(b => b.addEventListener('click', ()=>activate(b.dataset.tab)));
+
+  let initial = 'content';
+  try{
+    const saved = localStorage.getItem(TAB_STORAGE);
+    if(saved && panels.some(p => p.dataset.panel === saved)) initial = saved;
+  }catch(e){}
+  activate(initial);
+})();
+
+// ---------- Panel de configuración (API key) ----------
+document.getElementById('settingsToggle').addEventListener('click', ()=>{
+  const panel = document.getElementById('settingsPanel');
+  panel.open = !panel.open;
+  if(panel.open) panel.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+// ---------- API key de Anthropic (persistida en localStorage) ----------
+const ANTHROPIC_KEY_STORAGE = 'inkbot_video_anthropic_key';
+
+(function initAnthropicKey(){
+  const input = document.getElementById('anthropicKey');
+  const panel = document.getElementById('settingsPanel');
+  const saved = localStorage.getItem(ANTHROPIC_KEY_STORAGE);
+  if(saved){
+    input.value = saved;
+  } else {
+    panel.open = true; // sin clave guardada: se muestra abierta desde el inicio
+  }
+  input.addEventListener('change', ()=>{
+    const val = input.value.trim();
+    if(val) localStorage.setItem(ANTHROPIC_KEY_STORAGE, val);
+    else localStorage.removeItem(ANTHROPIC_KEY_STORAGE);
+  });
+})();
+
+function getAnthropicKey(){
+  const input = document.getElementById('anthropicKey');
+  return (input && input.value.trim()) || '';
+}
+
+function anthropicHeaders(){
+  return {
+    "Content-Type": "application/json",
+    "x-api-key": getAnthropicKey(),
+    "anthropic-version": "2023-06-01",
+    "anthropic-dangerous-direct-browser-access": "true"
+  };
+}
+
+function requireAnthropicKey(statusSetter){
+  const key = getAnthropicKey();
+  if(!key){
+    statusSetter('Pega tu API key de Anthropic en Configuración primero.', true);
+    const panel = document.getElementById('settingsPanel');
+    panel.open = true;
+    panel.scrollIntoView({behavior:'smooth', block:'start'});
+    return false;
+  }
+  return true;
+}
+
+function setStatus(msg, isErr=false){
+  const s = document.getElementById('status');
+  s.textContent = msg;
+  s.className = 'status' + (isErr ? ' err' : '');
+}
+
+async function generate(){
+  const tema = document.getElementById('tema').value.trim();
+  const contexto = document.getElementById('contexto').value.trim();
+  const clipEls = document.querySelectorAll('.clip');
+
+  if(!tema){ setStatus('Escribe el tema del video primero.', true); return; }
+  if(clipEls.length === 0){ setStatus('Agrega al menos un clip.', true); return; }
+
+  const clips = Array.from(clipEls).map((el, i)=>({
+    orden: i+1,
+    etiqueta: el.querySelector('.clip-label').value.trim() || `Clip ${i+1}`,
+    descripcion: el.querySelector('.clip-desc').value.trim()
+  }));
+
+  if(clips.some(c => !c.descripcion)){ setStatus('Describe qué muestra cada clip.', true); return; }
+  if(!requireAnthropicKey(setStatus)) return;
+
+  const targetDuration = parseInt(document.getElementById('targetDuration').value, 10) || 60;
+
+  const btn = document.getElementById('generate');
+  btn.disabled = true;
+  setStatus('Escribiendo el guion...');
+
+  try{
+    let trendsContext = '';
+    if(currentTrends){
+      const tags = (currentTrends.hashtags || []).join(', ');
+      const sonidos = (currentTrends.sonidos || []).map(s => s.nombre).join(', ');
+      trendsContext = `\n\nTendencias vigentes esta semana en el nicho de tatuajes (úsalas, no las ignores):\n- Sonidos que están pegando: ${sonidos || 'sin datos'}\n- Hashtags que están pegando: ${tags || 'sin datos'}\n- Formato de gancho que está funcionando ahora: ${currentTrends.formato_gancho || 'sin datos'}\n- Resumen de la semana: ${currentTrends.resumen || 'sin datos'}`;
+    }
+
+    const userContent = `Tema: ${tema}\nContexto/marca personal: ${contexto || '(sin contexto adicional)'}\nDuración objetivo del video final: ~${targetDuration} segundos.${trendsContext}\n\nClips en orden:\n` +
+      clips.map(c => `${c.orden}. ${c.etiqueta} — ${c.descripcion}`).join('\n');
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: anthropicHeaders(),
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: `Eres un experto en storytelling y contenido viral para tatuadores en Instagram y TikTok. A partir del tema, el contexto y los clips (ya en el orden que el tatuador quiere), genera EXCLUSIVAMENTE un objeto JSON, sin texto adicional, sin markdown, sin backticks, con esta estructura exacta:
+{"gancho":"string, lo que se dice o aparece en los primeros 2 segundos para enganchar","clips":[{"orden":number,"etiqueta":"string","narracion":"string, lo que la voz en off dice mientras se ve ese clip, tono cercano y auténtico, nada de relleno, máximo 2 frases","texto_pantalla":"string corto o vacío si no aplica","duracion_sugerida_seg":number}],"caption_instagram":"string","caption_tiktok":"string","hashtags":["string", ...8 a 15 hashtags, mezcla de nicho tattoo y amplios],"dia_sugerido":"string, día de la semana","hora_sugerida":"string, hora aproximada","razon_dia_hora":"string, una frase breve","tip_viral":"string, una frase concreta y accionable, nada genérica"}
+
+REGLA FIJA E INNEGOCIABLE sobre el gancho: los primeros 1-3 segundos del video (el campo "gancho", y la narración/texto_pantalla del clip número 1) SIEMPRE deben ser lo más llamativo y viral de todo el contenido disponible. Usa el dato más atractivo del contexto (identidad, origen, contraste, un giro inesperado, una pregunta directa) desde el primer instante. Nunca empieces con introducciones lentas tipo "hoy les traigo", "en este video les voy a mostrar" o "hola a todos". Ve directo al dato o momento que detiene el scroll, y solo después entra al proceso del tatuaje.
+
+Si el usuario te da "Tendencias vigentes esta semana", NO son un dato de fondo opcional: úsalas de verdad. El formato de gancho que está funcionando esta semana debe influir en cómo estructuras el "gancho" y la narración del clip 1. De los hashtags, incluye los que de verdad apliquen al tema (no fuerces uno que no tenga sentido) mezclados con los de nicho tattoo de siempre — el resultado nunca debe sentirse genérico ni de una semana cualquiera. Si no te dan tendencias, sigue las reglas normales sin mencionarlo.
+
+Sobre "Duración objetivo del video final": reparte "duracion_sugerida_seg" entre los clips para que la suma total se acerque a ese objetivo. Para lograrlo NO alargues un solo clip de forma artificial ni metas narración de relleno — en vez de eso, si el objetivo es alto (60s o más), procura que la narración de cada clip sea rica, completa y avance la historia real del proceso, y no tengas miedo de darle a un clip una duracion_sugerida_seg relativamente alta (8 a 15 segundos) cuando ese momento del proceso lo amerite: la app corta automáticamente ese tramo en varias micro-tomas dinámicas del mismo material, así que nunca se va a ver como una sola toma estática y larga. Prioriza siempre narración auténtica y específica sobre estirar el tiempo con relleno.
+
+Escribe todo en español, en la voz de un tatuador auténtico, no de marketer. Sé específico al tema y a cada clip, nunca genérico.`,
+        messages: [{ role: "user", content: userContent }]
+      })
+    });
+
+    const data = await response.json();
+    if(!response.ok){
+      throw new Error(data?.error?.message || `Error ${response.status} al llamar a Anthropic. Revisa tu API key.`);
+    }
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
+
+    renderResult(result);
+    await saveToHistory(tema, result);
+    setStatus('Listo.');
+  } catch(err){
+    console.error(err);
+    setStatus(err.message || 'No se pudo generar el guion. Intenta de nuevo.', true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderResult(result){
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('r-hook').textContent = result.gancho || '';
+
+  const rc = document.getElementById('r-clips');
+  rc.innerHTML = '';
+  (result.clips || []).forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'result-clip';
+    div.innerHTML = `
+      <div class="result-num">${String(c.orden).padStart(2,'0')}</div>
+      <div class="result-body">
+        <div class="rc-label">${c.etiqueta} · ~${c.duracion_sugerida_seg || '?'}s</div>
+        <div class="rc-narr">${c.narracion || ''}</div>
+        ${c.texto_pantalla ? `<div class="rc-onscreen">${c.texto_pantalla}</div>` : ''}
+      </div>
+    `;
+    rc.appendChild(div);
+  });
+
+  document.getElementById('r-ig').textContent = result.caption_instagram || '';
+  document.getElementById('r-tt').textContent = result.caption_tiktok || '';
+
+  const tagsWrap = document.getElementById('r-tags');
+  tagsWrap.innerHTML = '';
+  const tags = (result.hashtags || []).map(t => t.startsWith('#') ? t : '#'+t);
+  tags.forEach(t=>{
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = t;
+    tagsWrap.appendChild(span);
+  });
+  document.getElementById('r-tags-text').textContent = tags.join(' ');
+
+  document.getElementById('r-day').textContent = result.dia_sugerido || '';
+  document.getElementById('r-time').textContent = result.hora_sugerida || '';
+  document.getElementById('r-why').textContent = result.razon_dia_hora || '';
+
+  document.getElementById('r-tip').textContent = result.tip_viral || '';
+
+  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+document.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('copy-btn')){
+    const targetId = e.target.dataset.copy;
+    const text = document.getElementById(targetId).textContent;
+    navigator.clipboard.writeText(text).then(()=>{
+      const original = e.target.textContent;
+      e.target.textContent = 'Copiado';
+      setTimeout(()=>{ e.target.textContent = original; }, 1400);
+    });
+  }
+});
+
+async function saveToHistory(tema, result){
+  try{
+    let historial = [];
+    try{
+      const existing = await localStore.get('guiones-historial');
+      if(existing && existing.value) historial = JSON.parse(existing.value);
+    } catch(e){ /* no existe aún */ }
+
+    historial.unshift({ tema, fecha: new Date().toISOString(), result });
+    historial = historial.slice(0, 20);
+
+    await localStore.set('guiones-historial', JSON.stringify(historial));
+    renderHistory(historial);
+  } catch(e){
+    console.error('No se pudo guardar el historial', e);
+  }
+}
+
+async function loadHistory(){
+  try{
+    const existing = await localStore.get('guiones-historial');
+    if(existing && existing.value){
+      renderHistory(JSON.parse(existing.value));
+    }
+  } catch(e){ /* sin historial todavía */ }
+}
+
+function renderHistory(historial){
+  const list = document.getElementById('histList');
+  list.innerHTML = '';
+  historial.forEach((h, i)=>{
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    const d = new Date(h.fecha);
+    div.innerHTML = `<div>${h.tema}</div><div class="hd">${d.toLocaleDateString('es-MX', {day:'numeric', month:'short', year:'numeric'})}</div>`;
+    div.addEventListener('click', ()=>{
+      renderResult(h.result);
+    });
+    list.appendChild(div);
+  });
+}
+
+document.getElementById('generate').addEventListener('click', generate);
+loadHistory();
+
+// ---------- Fase 2: Narración con voz ----------
+let currentResult = null;
+let generatedClipBuffers = []; // AudioBuffer por clip, en orden
+let generatedClipWords = []; // timing por palabra (para subtítulos karaoke), en paralelo a generatedClipBuffers
+
+const _origRenderResult = renderResult;
+renderResult = function(result){
+  _origRenderResult(result);
+  currentResult = result;
+  document.getElementById('narrClips').innerHTML = '';
+  document.getElementById('downloadFull').style.display = 'none';
+  generatedClipBuffers = [];
+  generatedClipWords = [];
+  setNarrStatus('');
+  unlockPhase2();
+  unlockPhase3();
+};
+
+function unlockPhase2(){
+  document.getElementById('phase2Locked').style.display = 'none';
+  document.getElementById('phase2Unlocked').style.display = 'block';
+  document.getElementById('elKey').disabled = false;
+  document.getElementById('loadVoices').disabled = false;
+
+  const t1 = document.querySelector('.ft-item[data-fase="1"]');
+  const t2 = document.querySelector('.ft-item[data-fase="2"]');
+  t1.className = 'ft-item ft-unlocked';
+  t2.className = 'ft-item ft-current';
+}
+
+function setNarrStatus(msg, isErr=false){
+  const s = document.getElementById('narrStatus');
+  s.textContent = msg;
+  s.className = 'status' + (isErr ? ' err' : '');
+}
+
+document.getElementById('loadVoices').addEventListener('click', async ()=>{
+  const key = document.getElementById('elKey').value.trim();
+  if(!key){ setNarrStatus('Pega tu API key de ElevenLabs primero.', true); return; }
+  setNarrStatus('Cargando voces...');
+  try{
+    const res = await fetch('https://api.elevenlabs.io/v1/voices', {
+      headers: { 'xi-api-key': key }
+    });
+    if(!res.ok) throw new Error('key inválida o sin permisos');
+    const data = await res.json();
+    const select = document.getElementById('elVoice');
+    select.innerHTML = '';
+    (data.voices || []).forEach(v=>{
+      const opt = document.createElement('option');
+      opt.value = v.voice_id;
+      opt.textContent = v.name;
+      select.appendChild(opt);
+    });
+    select.disabled = false;
+    document.getElementById('genNarration').disabled = false;
+    setNarrStatus(`${(data.voices||[]).length} voces cargadas.`);
+  } catch(err){
+    console.error(err);
+    setNarrStatus('No se pudieron cargar las voces. Revisa tu API key.', true);
+  }
+});
+
+// Convierte el audio_base64 que devuelve ElevenLabs en un ArrayBuffer decodificable
+function base64ToArrayBuffer(base64){
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0; i<binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
+// A partir del "alignment" por carácter que da ElevenLabs, arma el timing por
+// palabra (inicio/fin en segundos) que se usa para los subtítulos karaoke.
+function buildWordTimings(alignment){
+  if(!alignment) return [];
+  const chars = alignment.characters || [];
+  const starts = alignment.character_start_times_seconds || [];
+  const ends = alignment.character_end_times_seconds || [];
+  const words = [];
+  let wordChars = '', wordStart = null, wordEnd = null;
+  for(let i=0; i<chars.length; i++){
+    const ch = chars[i];
+    if(/\s/.test(ch)){
+      if(wordChars){
+        words.push({ text: wordChars, start: wordStart, end: wordEnd });
+        wordChars = ''; wordStart = null; wordEnd = null;
+      }
+    } else {
+      if(wordStart === null) wordStart = starts[i];
+      wordEnd = ends[i];
+      wordChars += ch;
+    }
+  }
+  if(wordChars) words.push({ text: wordChars, start: wordStart, end: wordEnd });
+  return words;
+}
+
+document.getElementById('genNarration').addEventListener('click', async ()=>{
+  if(!currentResult){ setNarrStatus('Genera primero el guion.', true); return; }
+  const key = document.getElementById('elKey').value.trim();
+  const voiceId = document.getElementById('elVoice').value;
+  if(!key || !voiceId){ setNarrStatus('Carga tu clave y elige una voz primero.', true); return; }
+
+  const btn = document.getElementById('genNarration');
+  btn.disabled = true;
+  const wrap = document.getElementById('narrClips');
+  wrap.innerHTML = '';
+  generatedClipBuffers = [];
+  generatedClipWords = [];
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const clips = currentResult.clips || [];
+
+  for(let i=0; i<clips.length; i++){
+    const c = clips[i];
+    setNarrStatus(`Generando voz del clip ${i+1} de ${clips.length}...`);
+    try{
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/with-timestamps`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': key,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          text: c.narracion,
+          model_id: 'eleven_multilingual_v2'
+        })
+      });
+      if(!res.ok) throw new Error('fallo TTS clip ' + (i+1));
+      const payload = await res.json();
+      const arrayBuf = base64ToArrayBuffer(payload.audio_base64);
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuf.slice(0));
+      generatedClipBuffers[i] = audioBuffer;
+      generatedClipWords[i] = buildWordTimings(payload.alignment || payload.normalized_alignment);
+
+      const blob = new Blob([arrayBuf], { type: 'audio/mpeg' });
+      const url = URL.createObjectURL(blob);
+
+      const div = document.createElement('div');
+      div.className = 'narr-clip';
+      div.innerHTML = `
+        <div class="nc-label">Clip ${String(c.orden).padStart(2,'0')} · ${c.etiqueta}</div>
+        <audio controls src="${url}"></audio>
+        <a class="dl" href="${url}" download="clip-${c.orden}-narracion.mp3">Descargar MP3</a>
+      `;
+      wrap.appendChild(div);
+    } catch(err){
+      console.error(err);
+      setNarrStatus(`Falló el clip ${i+1}. Revisa tu key o intenta de nuevo.`, true);
+    }
+  }
+
+  if(generatedClipBuffers.filter(Boolean).length === clips.length){
+    setNarrStatus('Narración lista.');
+    document.getElementById('downloadFull').style.display = 'block';
+    unlockPhase3();
+  } else {
+    setNarrStatus('Algunos clips no se generaron. Puedes reintentar.', true);
+  }
+  btn.disabled = false;
+});
+
+document.getElementById('downloadFull').addEventListener('click', ()=>{
+  const buffers = generatedClipBuffers.filter(Boolean);
+  if(buffers.length === 0) return;
+
+  const sampleRate = buffers[0].sampleRate;
+  const gapSec = 0.35;
+  const gapSamples = Math.floor(gapSec * sampleRate);
+  const totalLength = buffers.reduce((sum, b) => sum + b.length, 0) + gapSamples * (buffers.length - 1);
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const outBuffer = audioCtx.createBuffer(1, totalLength, sampleRate);
+  const outData = outBuffer.getChannelData(0);
+
+  let offset = 0;
+  buffers.forEach((b, i)=>{
+    const chData = b.getChannelData(0);
+    outData.set(chData, offset);
+    offset += b.length + (i < buffers.length-1 ? gapSamples : 0);
+  });
+
+  const wavBlob = bufferToWav(outBuffer);
+  const url = URL.createObjectURL(wavBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'narracion-completa.wav';
+  a.click();
+});
+
+function bufferToWav(buffer){
+  const numChannels = 1;
+  const sampleRate = buffer.sampleRate;
+  const samples = buffer.getChannelData(0);
+  const bytesPerSample = 2;
+  const blockAlign = numChannels * bytesPerSample;
+  const dataSize = samples.length * bytesPerSample;
+  const bufferArr = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(bufferArr);
+
+  function writeStr(offset, str){
+    for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i));
+  }
+
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  let offset = 44;
+  for(let i=0;i<samples.length;i++){
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    offset += 2;
+  }
+
+  return new Blob([bufferArr], { type: 'audio/wav' });
+}
+
+// ---------- Reparador de duración de WebM ----------
+// MediaRecorder graba en modo streaming: no sabe la duración total mientras graba,
+// así que el campo Duration del contenedor EBML/Matroska queda con un valor
+// placeholder. Por eso el video final "se ve en 0:00" y no avanza la barra, aunque
+// el contenido esté completo. Esto ubica ese campo dentro del archivo y lo
+// sobreescribe con la duración real medida durante la grabación, sin recomprimir
+// ni tocar el video/audio en sí.
+function readEbmlId(bytes, offset){
+  const first = bytes[offset];
+  let length;
+  if(first & 0x80) length = 1;
+  else if(first & 0x40) length = 2;
+  else if(first & 0x20) length = 3;
+  else if(first & 0x10) length = 4;
+  else return null;
+  let id = 0;
+  for(let i=0;i<length;i++) id = id*256 + bytes[offset+i];
+  return { id, length };
+}
+
+function readEbmlSize(bytes, offset){
+  const first = bytes[offset];
+  if(first === 0) return null;
+  let mask = 0x80, length = 1;
+  while(!(first & mask)){
+    mask >>= 1; length++;
+    if(length > 8) return null;
+  }
+  let value = first & (mask - 1);
+  for(let i=1;i<length;i++) value = value*256 + bytes[offset+i];
+  const maxValue = Math.pow(2, 7*length) - 1;
+  return { length, value, unknown: value === maxValue };
+}
+
+function findWebmDurationField(bytes){
+  const EBML=0x1A45DFA3, SEGMENT=0x18538067, INFO=0x1549A966, DURATION=0x4489, CLUSTER=0x1F43B675;
+  let offset = 0;
+  const ebmlId = readEbmlId(bytes, offset);
+  if(!ebmlId || ebmlId.id !== EBML) return null;
+  offset += ebmlId.length;
+  const ebmlSize = readEbmlSize(bytes, offset);
+  if(!ebmlSize) return null;
+  offset += ebmlSize.length + ebmlSize.value;
+
+  const segId = readEbmlId(bytes, offset);
+  if(!segId || segId.id !== SEGMENT) return null;
+  offset += segId.length;
+  const segSize = readEbmlSize(bytes, offset);
+  if(!segSize) return null;
+  offset += segSize.length;
+  const segmentEnd = segSize.unknown ? bytes.length : offset + segSize.value;
+
+  while(offset < segmentEnd && offset < bytes.length - 2){
+    const childId = readEbmlId(bytes, offset);
+    if(!childId) break;
+    offset += childId.length;
+    const childSize = readEbmlSize(bytes, offset);
+    if(!childSize) break;
+    offset += childSize.length;
+    const dataStart = offset;
+
+    if(childId.id === INFO){
+      const infoEnd = childSize.unknown ? segmentEnd : dataStart + childSize.value;
+      let inner = dataStart;
+      while(inner < infoEnd && inner < bytes.length - 2){
+        const subId = readEbmlId(bytes, inner);
+        if(!subId) break;
+        inner += subId.length;
+        const subSize = readEbmlSize(bytes, inner);
+        if(!subSize) break;
+        inner += subSize.length;
+        if(subId.id === DURATION && (subSize.value === 4 || subSize.value === 8)){
+          return { offset: inner, length: subSize.value };
+        }
+        inner += subSize.value;
+      }
+      return null;
+    }
+    if(childId.id === CLUSTER) return null; // no había Info antes del primer Cluster
+    if(childSize.unknown) break;
+    offset = dataStart + childSize.value;
+  }
+  return null;
+}
+
+async function fixWebmDuration(blob, durationSeconds){
+  const buf = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  const field = findWebmDurationField(bytes);
+  if(!field) return blob; // no se encontró el campo: se entrega el original, sin romper nada
+
+  const view = new DataView(bytes.buffer);
+  // Duration se guarda en unidades de TimecodeScale (por defecto 1,000,000ns = 1ms)
+  const durationInScaleUnits = durationSeconds * 1000;
+  if(field.length === 8) view.setFloat64(field.offset, durationInScaleUnits, false);
+  else view.setFloat32(field.offset, durationInScaleUnits, false);
+
+  return new Blob([bytes], { type: blob.type });
+}
+
+// ---------- Fase 3: Ensamblado de video ----------
+function unlockPhase3(){
+  document.getElementById('phase3Locked').style.display = 'none';
+  document.getElementById('phase3Unlocked').style.display = 'block';
+  document.getElementById('assembleVideo').disabled = false;
+
+  const t2 = document.querySelector('.ft-item[data-fase="2"]');
+  const t3 = document.querySelector('.ft-item[data-fase="3"]');
+  t2.className = 'ft-item ft-unlocked';
+  t3.className = 'ft-item ft-current';
+
+  renderPhase3Clips();
+}
+
+function renderPhase3Clips(){
+  const wrap = document.getElementById('p3Clips');
+  wrap.innerHTML = '';
+  const clips = (currentResult && currentResult.clips) || [];
+  const domClips = document.querySelectorAll('.clip');
+
+  clips.forEach((c, i)=>{
+    const domClip = domClips[i];
+    const fileInput = domClip ? domClip.querySelector('.clip-file') : null;
+    const hasFile = fileInput && fileInput.files && fileInput.files[0];
+
+    const div = document.createElement('div');
+    div.className = 'p3-clip';
+    div.dataset.idx = i;
+    div.innerHTML = `
+      <div class="p3-label">${String(c.orden).padStart(2,'0')} · ${c.etiqueta}</div>
+      <div class="p3-file-status ${hasFile ? 'ok' : ''}">${hasFile ? 'Clip cargado ✓ — se recorta y ajusta solo' : 'Sin clip — cárgalo arriba en "Clip de referencia" de este mismo clip'}</div>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+function drawCover(ctx, video, cw, ch, zoom){
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if(!vw || !vh) return;
+  const z = zoom || 1;
+  const scale = Math.max(cw/vw, ch/vh) * z;
+  const dw = vw*scale, dh = vh*scale;
+  ctx.drawImage(video, (cw-dw)/2, (ch-dh)/2, dw, dh);
+}
+
+// Zoom sutil tipo Ken Burns: cada clip alterna entre "acercarse" y "alejarse"
+// muy levemente durante el tiempo que está en pantalla (incluye la transición).
+const KEN_BURNS_AMOUNT = 0.07;
+function kenBurnsZoom(dir, t0, durSec){
+  if(!t0) return 1;
+  const elapsed = (performance.now() - t0) / 1000;
+  const progress = Math.max(0, Math.min(1, durSec > 0 ? elapsed / durSec : 1));
+  const from = dir === 1 ? 1 : 1 + KEN_BURNS_AMOUNT;
+  const to = dir === 1 ? 1 + KEN_BURNS_AMOUNT : 1;
+  return from + (to - from) * progress;
+}
+
+function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+function easeOutBack(t){
+  const c1 = 1.70158, c3 = c1 + 1;
+  const x = t - 1;
+  return 1 + c3 * x*x*x + c1 * x*x;
+}
+
+// Viñeteado sutil: oscurece bordes y añade un ligero grado de color
+// (crimson a jade) para que el video se vea más cuidado, sin taparse el texto.
+function drawVignette(ctx, cw, ch){
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  const dark = ctx.createRadialGradient(cw/2, ch*0.45, ch*0.25, cw/2, ch*0.5, ch*0.78);
+  dark.addColorStop(0, 'rgba(0,0,0,0)');
+  dark.addColorStop(1, 'rgba(8,6,5,0.55)');
+  ctx.fillStyle = dark;
+  ctx.fillRect(0, 0, cw, ch);
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'overlay';
+  ctx.globalAlpha = 0.10;
+  const tint = ctx.createLinearGradient(0, 0, cw, ch);
+  tint.addColorStop(0, '#b21e35');
+  tint.addColorStop(1, '#2e6b58');
+  ctx.fillStyle = tint;
+  ctx.fillRect(0, 0, cw, ch);
+  ctx.restore();
+}
+
+// Devuelve qué "chunk" (grupo de 2-3 palabras) de subtítulos karaoke debe verse
+// en el instante "elapsed" (segundos desde que arrancó la narración de ese clip).
+function activeChunkIndex(chunks, elapsed){
+  for(let i=0; i<chunks.length; i++){
+    const c = chunks[i];
+    const end = c[c.length-1].end;
+    const nextStart = (i+1 < chunks.length) ? chunks[i+1][0].start : end + 0.4;
+    if(elapsed < nextStart) return i;
+  }
+  return chunks.length - 1;
+}
+
+// Fallback: el rótulo estático de siempre (texto_pantalla), con su pop-in de entrada.
+function drawStaticLabel(ctx, cw, ch, text, textT0, textY){
+  const ANIM_MS = 320;
+  const elapsed = textT0 ? (performance.now() - textT0) : ANIM_MS;
+  const t = Math.max(0, Math.min(1, elapsed / ANIM_MS));
+  const eased = easeOutBack(t);
+  const alpha = Math.max(0, Math.min(1, elapsed / (ANIM_MS * 0.6)));
+  const slide = (1 - eased) * 26; // entra deslizándose desde abajo
+  const scale = 0.68 + eased * 0.32; // salto de escala con rebote, estilo CapCut
+
+  ctx.font = "800 36px 'Big Shoulders Display', sans-serif";
+  ctx.textAlign = 'center';
+  const y = ch * (textY || 0.82) + slide;
+  const metrics = ctx.measureText(text.toUpperCase());
+  const pad = 22;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cw/2, y);
+  ctx.scale(scale, scale);
+  ctx.translate(-cw/2, -y);
+  ctx.fillStyle = 'rgba(18,15,14,0.72)';
+  ctx.fillRect(cw/2 - metrics.width/2 - pad, y - 40, metrics.width + pad*2, 56);
+  ctx.fillStyle = '#c79a3d';
+  ctx.fillText(text.toUpperCase(), cw/2, y - 2);
+  ctx.restore();
+}
+
+// Devuelve los datos comunes del "chunk" activo (grupo de 2-3 palabras) en el
+// instante "elapsed": qué chunk toca mostrar, su opacidad de entrada/salida y
+// el progreso de la animación de entrada. Todos los estilos de subtítulos
+// parten de aquí para no repetir la misma cuenta de tiempos.
+function getChunkFrame(blend, elapsed){
+  const chunks = blend.chunks;
+  const idx = activeChunkIndex(chunks, elapsed);
+  const chunk = chunks[idx];
+  if(!chunk || !chunk.length) return null;
+
+  const chunkStart = chunk[0].start;
+  const chunkFallbackEnd = chunk[chunk.length-1].end + 0.4;
+  const nextStart = (idx+1 < chunks.length) ? chunks[idx+1][0].start : chunkFallbackEnd;
+
+  const ENTRY = 0.16, EXIT = 0.10;
+  const timeIntoChunk = elapsed - chunkStart;
+  const timeToNext = nextStart - elapsed;
+  let alpha = 1;
+  if(timeIntoChunk < ENTRY) alpha = Math.max(0, timeIntoChunk / ENTRY);
+  if(timeToNext < EXIT) alpha = Math.min(alpha, Math.max(0, timeToNext / EXIT));
+  if(alpha <= 0) return null;
+
+  const entryT = Math.max(0, Math.min(1, timeIntoChunk / ENTRY));
+  const entryEase = easeOutBack(entryT);
+  return { chunk, idx, alpha, entryEase, timeIntoChunk };
+}
+
+// ---------- Estilo 1: "Píldora dorada" ----------
+// Fondo oscuro tras el chunk completo; la palabra activa salta a su propia
+// píldora dorada con rebote de escala y leve giro.
+function renderPopPill(ctx, cw, ch, blend, elapsed){
+  const frame = getChunkFrame(blend, elapsed);
+  if(!frame) return;
+  const { chunk, alpha, entryEase } = frame;
+  const chunkScale = 0.7 + entryEase * 0.3;
+  const slide = (1 - entryEase) * 30;
+
+  const BASE = 32, ACTIVE_BOOST = 14, POP_S = 0.16;
+  const HL_BG = '#c79a3d', HL_TXT = '#120f0e';
+
+  const parts = chunk.map(w=>{
+    const isActive = elapsed >= w.start && elapsed < w.end;
+    const isSpoken = elapsed >= w.end;
+    let size = BASE;
+    if(w.text.length >= 7) size += 3;
+    let scale = 1, rotate = 0, bg = null, color = 'rgba(237,231,221,0.45)';
+    if(isSpoken) color = '#ede7dd';
+    if(isActive){
+      const since = Math.max(0, elapsed - w.start);
+      const pop = Math.max(0, 1 - Math.min(1, since / POP_S));
+      scale = 1 + pop * 0.55;
+      rotate = pop * (w.text.length % 2 === 0 ? -3.5 : 3.5);
+      bg = HL_BG; color = HL_TXT;
+      size += ACTIVE_BOOST;
+    }
+    return { text: w.text.toUpperCase(), size, color, scale, rotate, bg };
+  });
+
+  const gap = 12;
+  ctx.textAlign = 'left';
+  const widths = parts.map(p=>{
+    ctx.font = `800 ${p.size}px 'Big Shoulders Display', sans-serif`;
+    return ctx.measureText(p.text).width;
+  });
+  const totalWidth = widths.reduce((a,b)=>a+b,0) + gap * (parts.length - 1);
+
+  const y = ch * (blend.textY || 0.82) + slide;
+  const maxSize = Math.max(...parts.map(p=>p.size));
+  const boxH = maxSize + 34;
+  const pad = 24;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cw/2, y);
+  ctx.scale(chunkScale, chunkScale);
+  ctx.translate(-cw/2, -y);
+
+  ctx.fillStyle = 'rgba(18,15,14,0.68)';
+  const bx = cw/2 - totalWidth/2 - pad, bw = totalWidth + pad*2, bh = boxH, by = y - boxH*0.68;
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 14); else ctx.rect(bx, by, bw, bh);
+  ctx.fill();
+
+  let x = cw/2 - totalWidth/2;
+  parts.forEach((p,i)=>{
+    ctx.font = `800 ${p.size}px 'Big Shoulders Display', sans-serif`;
+    const w = widths[i];
+    const cx = x + w/2, cy = y - (p.size - BASE) * 0.3;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(p.rotate * Math.PI/180);
+    ctx.scale(p.scale, p.scale);
+    if(p.bg){
+      const padX = 12, padY = 8;
+      const bw2 = w + padX*2, bh2 = p.size + padY*2;
+      ctx.fillStyle = p.bg;
+      ctx.beginPath();
+      if(ctx.roundRect) ctx.roundRect(-bw2/2, -bh2*0.62, bw2, bh2, 10); else ctx.rect(-bw2/2, -bh2*0.62, bw2, bh2);
+      ctx.fill();
+    }
+    ctx.fillStyle = p.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(p.text, 0, p.size*0.32);
+    ctx.restore();
+    x += w + gap;
+  });
+  ctx.restore();
+}
+
+// ---------- Estilo 2: "Línea TikTok" ----------
+// Texto blanco grueso con contorno negro (el look clásico de caption automático),
+// sin caja de fondo; la palabra activa se pone amarilla, crece un poco y se subraya.
+function renderTiktokLine(ctx, cw, ch, blend, elapsed){
+  const frame = getChunkFrame(blend, elapsed);
+  if(!frame) return;
+  const { chunk, alpha, entryEase } = frame;
+  const slide = (1 - entryEase) * 24;
+  const BASE = 34;
+
+  const parts = chunk.map(w=>{
+    const isActive = elapsed >= w.start && elapsed < w.end;
+    let scale = 1;
+    if(isActive){
+      const since = Math.max(0, elapsed - w.start);
+      const pop = Math.max(0, 1 - Math.min(1, since / 0.15));
+      scale = 1 + pop * 0.25;
+    }
+    return { text: w.text.toUpperCase(), color: isActive ? '#ffe14d' : '#ffffff', scale, isActive };
+  });
+
+  const gap = 10;
+  ctx.font = `900 ${BASE}px 'Big Shoulders Display', sans-serif`;
+  const widths = parts.map(p=>ctx.measureText(p.text).width);
+  const totalWidth = widths.reduce((a,b)=>a+b,0) + gap * (parts.length - 1);
+  const y = ch * (blend.textY || 0.82) + slide;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  let x = cw/2 - totalWidth/2;
+  parts.forEach((p,i)=>{
+    const w = widths[i];
+    const cx = x + w/2;
+    ctx.save();
+    ctx.translate(cx, y);
+    ctx.scale(p.scale, p.scale);
+    ctx.font = `900 ${BASE}px 'Big Shoulders Display', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 7;
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.strokeText(p.text, 0, 0);
+    ctx.fillStyle = p.color;
+    ctx.fillText(p.text, 0, 0);
+    if(p.isActive){
+      ctx.fillStyle = '#ffe14d';
+      ctx.fillRect(-w/2, 10, w, 5);
+    }
+    ctx.restore();
+    x += w + gap;
+  });
+  ctx.restore();
+}
+
+// ---------- Estilo 3: "Palabra a palabra" ----------
+// Una sola palabra gigante centrada a la vez (no el chunk completo), con
+// rebote de impacto y color que rota entre los acentos de la marca.
+function renderWordBlast(ctx, cw, ch, blend, elapsed){
+  const frame = getChunkFrame(blend, elapsed);
+  if(!frame) return;
+  const { chunk, alpha } = frame;
+  let word = chunk.find(w => elapsed >= w.start && elapsed < w.end);
+  let wIdx = word ? chunk.indexOf(word) : -1;
+  if(!word){
+    for(let i = chunk.length - 1; i >= 0; i--){
+      if(elapsed >= chunk[i].end){ word = chunk[i]; wIdx = i; break; }
+    }
+    if(!word){ word = chunk[0]; wIdx = 0; }
+  }
+
+  const since = Math.max(0, elapsed - word.start);
+  const growT = Math.min(1, since / 0.22);
+  const scale = 0.6 + easeOutBack(growT) * 0.55;
+  const rotate = (1 - growT) * (wIdx % 2 === 0 ? -6 : 6);
+  const colors = ['#c79a3d', '#b21e35', '#4c8b76'];
+  const color = colors[((wIdx % colors.length) + colors.length) % colors.length];
+
+  const y = ch * 0.58; // centrado hacia el tercio inferior, como texto de impacto
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cw/2, y);
+  ctx.rotate(rotate * Math.PI/180);
+  ctx.scale(scale, scale);
+  ctx.font = "900 64px 'Big Shoulders Display', sans-serif";
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,0.55)';
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = color;
+  ctx.fillText(word.text.toUpperCase(), 0, 0);
+  ctx.restore();
+}
+
+// ---------- Estilo 4: "Neón" ----------
+// Palabras en contorno claro (solo trazo); la palabra activa se "enciende"
+// rellena con glow de color, como letrero de neón.
+function renderNeonOutline(ctx, cw, ch, blend, elapsed){
+  const frame = getChunkFrame(blend, elapsed);
+  if(!frame) return;
+  const { chunk, alpha, entryEase } = frame;
+  const slide = (1 - entryEase) * 20;
+  const BASE = 32;
+
+  const parts = chunk.map(w=>{
+    const isActive = elapsed >= w.start && elapsed < w.end;
+    let scale = 1, glow = 0;
+    if(isActive){
+      const since = Math.max(0, elapsed - w.start);
+      glow = Math.max(0, 1 - Math.min(1, since / 0.3));
+      scale = 1 + glow * 0.12;
+    }
+    return { text: w.text.toUpperCase(), isActive, scale };
+  });
+
+  const gap = 12;
+  ctx.font = `800 ${BASE}px 'Big Shoulders Display', sans-serif`;
+  const widths = parts.map(p=>ctx.measureText(p.text).width);
+  const totalWidth = widths.reduce((a,b)=>a+b,0) + gap * (parts.length - 1);
+  const y = ch * (blend.textY || 0.82) + slide;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  let x = cw/2 - totalWidth/2;
+  parts.forEach((p,i)=>{
+    const w = widths[i];
+    const cx = x + w/2;
+    ctx.save();
+    ctx.translate(cx, y);
+    ctx.scale(p.scale, p.scale);
+    ctx.font = `800 ${BASE}px 'Big Shoulders Display', sans-serif`;
+    ctx.textAlign = 'center';
+    if(p.isActive){
+      ctx.shadowColor = '#2e6b58';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = '#4c8b76';
+      ctx.fillText(p.text, 0, 0);
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.lineWidth = 2.4;
+      ctx.strokeStyle = 'rgba(237,231,221,0.85)';
+      ctx.strokeText(p.text, 0, 0);
+    }
+    ctx.restore();
+    x += w + gap;
+  });
+  ctx.restore();
+}
+
+// ---------- Estilo 5: "Marcador deslizante" ----------
+// Look estilo CapCut: la frase completa en blanco con contorno negro grueso,
+// y un marcador dorado tipo resaltador que se DESLIZA suavemente de una
+// palabra a la siguiente (en vez de saltar), oscureciendo el texto que cubre.
+function renderSlideMarker(ctx, cw, ch, blend, elapsed){
+  const frame = getChunkFrame(blend, elapsed);
+  if(!frame) return;
+  const { chunk, alpha, entryEase } = frame;
+  const slide = (1 - entryEase) * 22;
+  const BASE = 34;
+
+  ctx.font = `800 ${BASE}px 'Big Shoulders Display', sans-serif`;
+  const words = chunk.map(w => w.text.toUpperCase());
+  const widths = words.map(t => ctx.measureText(t).width);
+  const gap = 16;
+  const totalWidth = widths.reduce((a,b)=>a+b,0) + gap * (chunk.length - 1);
+  const y = ch * (blend.textY || 0.82) + slide;
+  const startX = cw/2 - totalWidth/2;
+
+  const xs = [];
+  let cursor = startX;
+  widths.forEach(w => { xs.push(cursor); cursor += w + gap; });
+
+  let activeIdx = chunk.findIndex(w => elapsed >= w.start && elapsed < w.end);
+  if(activeIdx === -1){
+    activeIdx = 0;
+    for(let i = chunk.length - 1; i >= 0; i--){ if(elapsed >= chunk[i].end){ activeIdx = i; break; } }
+  }
+  const prevIdx = Math.max(0, activeIdx - 1);
+  const t = Math.max(0, Math.min(1, (elapsed - chunk[activeIdx].start) / 0.22));
+  const eased = easeOutCubic(t);
+  const pad = 10;
+  const fromX = xs[prevIdx] - pad, fromW = widths[prevIdx] + pad*2;
+  const toX = xs[activeIdx] - pad, toW = widths[activeIdx] + pad*2;
+  const markerX = fromX + (toX - fromX) * eased;
+  const markerW = fromW + (toW - fromW) * eased;
+  const boxH = BASE + 14;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = 'rgba(199,154,61,0.92)';
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(markerX, y - boxH*0.72, markerW, boxH, 9); else ctx.rect(markerX, y - boxH*0.72, markerW, boxH);
+  ctx.fill();
+
+  ctx.textAlign = 'left';
+  words.forEach((t, i)=>{
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = 'rgba(18,15,14,0.9)';
+    ctx.strokeText(t, xs[i], y);
+    ctx.fillStyle = i === activeIdx ? '#120f0e' : '#ede7dd';
+    ctx.fillText(t, xs[i], y);
+  });
+  ctx.restore();
+}
+
+// ---------- Estilo 6: "Ola de rebote" ----------
+// Todas las palabras del chunk rebotan en una ola continua; la palabra activa
+// crece, cambia a un color de la marca y rebota más fuerte que el resto.
+function renderBounceWave(ctx, cw, ch, blend, elapsed){
+  const frame = getChunkFrame(blend, elapsed);
+  if(!frame) return;
+  const { chunk, alpha } = frame;
+  const BASE = 34;
+  const colors = ['#c79a3d', '#b21e35', '#4c8b76'];
+
+  ctx.font = `900 ${BASE}px 'Big Shoulders Display', sans-serif`;
+  const words = chunk.map(w => w.text.toUpperCase());
+  const widths = words.map(t => ctx.measureText(t).width);
+  const gap = 14;
+  const totalWidth = widths.reduce((a,b)=>a+b,0) + gap * (chunk.length - 1);
+  const y = ch * (blend.textY || 0.82);
+  let x = cw/2 - totalWidth/2;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textAlign = 'center';
+  chunk.forEach((w, i)=>{
+    const isActive = elapsed >= w.start && elapsed < w.end;
+    const isSpoken = elapsed >= w.end;
+    const bob = Math.sin(elapsed*6 + i*0.9) * (isActive ? 11 : 4);
+    const scale = isActive ? 1.2 : (isSpoken ? 1 : 0.9);
+    const color = isActive ? colors[i % colors.length] : (isSpoken ? '#ede7dd' : 'rgba(237,231,221,0.4)');
+    const cx = x + widths[i]/2, cy = y + bob;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
+    ctx.font = `900 ${BASE}px 'Big Shoulders Display', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = 'rgba(18,15,14,0.85)';
+    ctx.strokeText(words[i], 0, 0);
+    ctx.fillStyle = color;
+    ctx.fillText(words[i], 0, 0);
+    ctx.restore();
+    x += widths[i] + gap;
+  });
+  ctx.restore();
+}
+
+// ---------- Estilo 7: "Máquina de escribir" ----------
+// El chunk se escribe letra por letra con un cursor parpadeante, en una sola
+// línea limpia sin efectos de color — look minimalista, distinto al karaoke.
+function renderTypewriter(ctx, cw, ch, blend, elapsed){
+  const frame = getChunkFrame(blend, elapsed);
+  if(!frame) return;
+  const { chunk, alpha } = frame;
+  const fullText = chunk.map(w => w.text).join(' ').toUpperCase();
+  const chunkStart = chunk[0].start;
+  const chunkEnd = chunk[chunk.length - 1].end;
+  const dur = Math.max(0.3, chunkEnd - chunkStart);
+  const progress = Math.max(0, Math.min(1, (elapsed - chunkStart) / dur));
+  const shown = fullText.slice(0, Math.round(fullText.length * progress));
+  const cursorOn = Math.floor(elapsed * 2.5) % 2 === 0;
+  const text = shown + (cursorOn ? '|' : '');
+
+  const BASE = 30;
+  ctx.font = `700 ${BASE}px 'Work Sans', monospace`;
+  const y = ch * (blend.textY || 0.82);
+  const w = ctx.measureText(text).width;
+  const pad = 20;
+  const boxH = BASE + 26;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = 'rgba(18,15,14,0.72)';
+  ctx.beginPath();
+  const bx = cw/2 - w/2 - pad, bw = w + pad*2, by = y - boxH*0.62;
+  if(ctx.roundRect) ctx.roundRect(bx, by, bw, boxH, 6); else ctx.rect(bx, by, bw, boxH);
+  ctx.fill();
+  ctx.fillStyle = '#ede7dd';
+  ctx.textAlign = 'center';
+  ctx.fillText(text, cw/2, y);
+  ctx.restore();
+}
+
+// ---------- Estilo 8: "Flash de impacto" ----------
+// Una palabra gigante a la vez con un destello de color radial detrás y un
+// leve golpe de cámara (shake) en cada palabra — el look viral tipo meme.
+function renderImpactFlash(ctx, cw, ch, blend, elapsed){
+  const frame = getChunkFrame(blend, elapsed);
+  if(!frame) return;
+  const { chunk, alpha } = frame;
+  let word = chunk.find(w => elapsed >= w.start && elapsed < w.end);
+  let wIdx = word ? chunk.indexOf(word) : -1;
+  if(!word){
+    for(let i = chunk.length - 1; i >= 0; i--){ if(elapsed >= chunk[i].end){ word = chunk[i]; wIdx = i; break; } }
+    if(!word){ word = chunk[0]; wIdx = 0; }
+  }
+  const since = Math.max(0, elapsed - word.start);
+  const burst = Math.max(0, 1 - Math.min(1, since / 0.28));
+  const colors = ['#b21e35', '#c79a3d', '#2e6b58'];
+  const color = colors[((wIdx % colors.length) + colors.length) % colors.length];
+  const y = ch * 0.5;
+  const shakeAmt = burst * 6;
+  const shakeX = (Math.random() - 0.5) * shakeAmt;
+  const shakeY = (Math.random() - 0.5) * shakeAmt;
+  const scale = 1 + burst * 0.35;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if(burst > 0){
+    ctx.save();
+    ctx.globalAlpha = alpha * burst * 0.55;
+    const grad = ctx.createRadialGradient(cw/2, y, 0, cw/2, y, 220);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.restore();
+  }
+  ctx.translate(cw/2 + shakeX, y + shakeY);
+  ctx.scale(scale, scale);
+  ctx.font = "900 70px 'Big Shoulders Display', sans-serif";
+  ctx.textAlign = 'center';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = '#120f0e';
+  ctx.strokeText(word.text.toUpperCase(), 0, 0);
+  ctx.fillStyle = '#ede7dd';
+  ctx.fillText(word.text.toUpperCase(), 0, 0);
+  ctx.restore();
+}
+
+// ---------- Librería de transiciones (Fase 3) ----------
+// Cada transición recibe (ctx, cw, ch, bufA, bufB, p): bufA/bufB son canvases
+// ya renderizados con el fotograma saliente y el entrante (o un fondo negro
+// sólido cuando se usan como apertura/cierre del video), y p va de 0 (solo A)
+// a 1 (solo B). Se eligen ~30 estilos distintos y la app escoge sola cuál usar
+// en cada corte, variando siempre para que no se repita el mismo dos veces seguidas.
+const BRAND_COLORS = ['#b21e35', '#d8a13a', '#2e6b58']; // carmesí, dorado, jade
+
+function tBg(ctx, cw, ch){ ctx.fillStyle = '#0a0908'; ctx.fillRect(0,0,cw,ch); }
+
+function tDraw(ctx, buf, cw, ch, o){
+  o = o || {};
+  ctx.save();
+  if(o.clip) o.clip(ctx, cw, ch);
+  if(o.composite) ctx.globalCompositeOperation = o.composite;
+  if(o.alpha != null) ctx.globalAlpha = o.alpha;
+  if(o.blur) ctx.filter = `blur(${o.blur}px)`;
+  const cx = cw/2 + (o.x||0), cy = ch/2 + (o.y||0);
+  ctx.translate(cx, cy);
+  if(o.rotate) ctx.rotate(o.rotate);
+  const s = (o.scale == null) ? 1 : o.scale;
+  ctx.scale(s, s);
+  ctx.drawImage(buf, -cw/2, -ch/2, cw, ch);
+  ctx.restore();
+}
+
+function easeInOutCubic(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+
+function mkSlide(dir){
+  return function(ctx,cw,ch,bufA,bufB,p){
+    const e = easeInOutCubic(p);
+    let ax=0,ay=0,bx=0,by=0;
+    if(dir==='left'){ ax=-cw*e; bx=cw*(1-e); }
+    if(dir==='right'){ ax=cw*e; bx=-cw*(1-e); }
+    if(dir==='up'){ ay=-ch*e; by=ch*(1-e); }
+    if(dir==='down'){ ay=ch*e; by=-ch*(1-e); }
+    tBg(ctx,cw,ch);
+    tDraw(ctx,bufA,cw,ch,{x:ax,y:ay});
+    tDraw(ctx,bufB,cw,ch,{x:bx,y:by});
+  };
+}
+
+function mkWipe(dir){
+  return function(ctx,cw,ch,bufA,bufB,p){
+    const e = easeInOutCubic(p);
+    tBg(ctx,cw,ch);
+    tDraw(ctx,bufA,cw,ch,{});
+    const clip = (c)=>{
+      c.beginPath();
+      if(dir==='left') c.rect(0,0,cw*e,ch);
+      else if(dir==='right') c.rect(cw*(1-e),0,cw*e,ch);
+      else if(dir==='up') c.rect(0,ch*(1-e),cw,ch*e);
+      else c.rect(0,0,cw,ch*e);
+      c.clip();
+    };
+    tDraw(ctx,bufB,cw,ch,{clip});
+    ctx.save();
+    ctx.globalAlpha = Math.sin(Math.PI*e) * 0.9;
+    ctx.fillStyle = BRAND_COLORS[0];
+    if(dir==='left') ctx.fillRect(cw*e-3,0,6,ch);
+    else if(dir==='right') ctx.fillRect(cw*(1-e)-3,0,6,ch);
+    else if(dir==='up') ctx.fillRect(0,ch*(1-e)-3,cw,6);
+    else ctx.fillRect(0,ch*e-3,cw,6);
+    ctx.restore();
+  };
+}
+
+function circleTransition(shrinkA){
+  return function(ctx,cw,ch,bufA,bufB,p){
+    const e = easeInOutCubic(p);
+    const maxR = Math.hypot(cw,ch)/2 * 1.05;
+    tBg(ctx,cw,ch);
+    if(shrinkA){
+      tDraw(ctx,bufB,cw,ch,{});
+      const r = Math.max(maxR*(1-e), 0.001);
+      tDraw(ctx,bufA,cw,ch,{clip:(c)=>{ c.beginPath(); c.arc(cw/2,ch/2,r,0,Math.PI*2); c.clip(); }});
+    } else {
+      tDraw(ctx,bufA,cw,ch,{});
+      const r = Math.max(maxR*e, 0.001);
+      tDraw(ctx,bufB,cw,ch,{clip:(c)=>{ c.beginPath(); c.arc(cw/2,ch/2,r,0,Math.PI*2); c.clip(); }});
+    }
+  };
+}
+
+function irisSquare(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufA,cw,ch,{});
+  const w = cw*e, h = ch*e;
+  tDraw(ctx,bufB,cw,ch,{clip:(c)=>{ c.beginPath(); c.rect((cw-w)/2,(ch-h)/2,w,h); c.clip(); }});
+}
+
+function zoomPunchIn(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufA,cw,ch,{alpha:1-e});
+  tDraw(ctx,bufB,cw,ch,{alpha:e, scale: 1.35 - 0.35*e});
+}
+
+function zoomBlurCross(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  const blurAmt = Math.sin(Math.PI*p)*10;
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufA,cw,ch,{alpha:1-e, blur:blurAmt, scale:1+0.06*e});
+  tDraw(ctx,bufB,cw,ch,{alpha:e, blur:blurAmt});
+}
+
+function spinTwistIn(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufA,cw,ch,{alpha:1-e});
+  tDraw(ctx,bufB,cw,ch,{alpha:e, scale:0.6+0.4*e, rotate:(1-e)*-0.4});
+}
+
+function mkBlinds(vertical, count){
+  return function(ctx,cw,ch,bufA,bufB,p){
+    const e = easeInOutCubic(p);
+    tBg(ctx,cw,ch);
+    tDraw(ctx,bufA,cw,ch,{});
+    const n = count||8;
+    const clip = (c)=>{
+      c.beginPath();
+      for(let i=0;i<n;i++){
+        const stagger = i*0.05;
+        const local = Math.max(0, Math.min(1, (e - stagger) / (1 - stagger*0.6)));
+        if(vertical){ const sw = cw/n; c.rect(i*sw, 0, sw*local, ch); }
+        else { const sh = ch/n; c.rect(0, i*sh, cw, sh*local); }
+      }
+      c.clip();
+    };
+    tDraw(ctx,bufB,cw,ch,{clip});
+  };
+}
+
+let pixelBuf=null, pixelCtx=null;
+function pixelateCross(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  tBg(ctx,cw,ch);
+  const drawPix = (buf, alpha, amt)=>{
+    if(amt < 4){ tDraw(ctx,buf,cw,ch,{alpha}); return; }
+    const pw = Math.max(4, Math.round(cw/amt)), ph = Math.max(4, Math.round(ch/amt));
+    if(!pixelBuf){ pixelBuf = document.createElement('canvas'); pixelCtx = pixelBuf.getContext('2d'); }
+    pixelBuf.width = pw; pixelBuf.height = ph;
+    pixelCtx.imageSmoothingEnabled = true;
+    pixelCtx.drawImage(buf,0,0,pw,ph);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(pixelBuf,0,0,pw,ph,0,0,cw,ch);
+    ctx.restore();
+  };
+  const amtCurve = Math.sin(Math.PI*p) * 26;
+  drawPix(bufA, 1-e, amtCurve);
+  drawPix(bufB, e, amtCurve);
+}
+
+function shutterClose(ctx,cw,ch,bufA,bufB,p){
+  tBg(ctx,cw,ch);
+  if(p < 0.5){
+    const e = easeInOutCubic(p/0.5);
+    tDraw(ctx,bufA,cw,ch,{});
+    ctx.fillStyle = '#0a0908';
+    ctx.fillRect(0,0,cw, ch/2*e);
+    ctx.fillRect(0,ch-ch/2*e,cw, ch/2*e);
+  } else {
+    const e = easeInOutCubic((p-0.5)/0.5);
+    tDraw(ctx,bufB,cw,ch,{});
+    ctx.fillStyle = '#0a0908';
+    ctx.fillRect(0,0,cw, ch/2*(1-e));
+    ctx.fillRect(0,ch-ch/2*(1-e),cw, ch/2*(1-e));
+  }
+}
+
+function barDoorsOpen(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufB,cw,ch,{});
+  tDraw(ctx,bufA,cw,ch,{x:-cw*e/2, clip:(c)=>{ c.beginPath(); c.rect(0,0,cw/2,ch); c.clip(); }});
+  tDraw(ctx,bufA,cw,ch,{x:cw*e/2, clip:(c)=>{ c.beginPath(); c.rect(cw/2,0,cw/2,ch); c.clip(); }});
+}
+
+function clockWipe(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufA,cw,ch,{});
+  const cx=cw/2, cy=ch/2, r=Math.hypot(cw,ch);
+  tDraw(ctx,bufB,cw,ch,{clip:(c)=>{
+    c.beginPath(); c.moveTo(cx,cy);
+    c.arc(cx,cy,r, -Math.PI/2, -Math.PI/2 + Math.PI*2*e);
+    c.closePath(); c.clip();
+  }});
+}
+
+function dropIn(ctx,cw,ch,bufA,bufB,p){
+  const e = easeOutBack(p);
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufA,cw,ch,{alpha: Math.max(0,1-p*2)});
+  tDraw(ctx,bufB,cw,ch,{y:(1-Math.min(e,1.15))*-ch});
+}
+
+function riseIn(ctx,cw,ch,bufA,bufB,p){
+  const e = easeOutBack(p);
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufA,cw,ch,{alpha: Math.max(0,1-p*2)});
+  tDraw(ctx,bufB,cw,ch,{y:(1-Math.min(e,1.15))*ch});
+}
+
+function flashSolid(color){
+  return function(ctx,cw,ch,bufA,bufB,p){
+    tBg(ctx,cw,ch);
+    if(p<0.5){ tDraw(ctx,bufA,cw,ch,{}); ctx.save(); ctx.globalAlpha=p*2; ctx.fillStyle=color; ctx.fillRect(0,0,cw,ch); ctx.restore(); }
+    else { tDraw(ctx,bufB,cw,ch,{}); ctx.save(); ctx.globalAlpha=(1-p)*2; ctx.fillStyle=color; ctx.fillRect(0,0,cw,ch); ctx.restore(); }
+  };
+}
+
+function glitchRGB(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufA,cw,ch,{alpha:1-e});
+  tDraw(ctx,bufB,cw,ch,{alpha:e});
+  const glitchAmt = Math.sin(Math.PI*p);
+  if(glitchAmt > 0.05){
+    const jitter = (Math.random()-0.5)*14*glitchAmt;
+    tDraw(ctx,bufB,cw,ch,{x: jitter, composite:'lighter', alpha:0.35*glitchAmt});
+    tDraw(ctx,bufB,cw,ch,{x: -jitter, composite:'lighter', alpha:0.25*glitchAmt});
+    const stripes = 5;
+    for(let i=0;i<stripes;i++){
+      const sy = (i/stripes)*ch + (Math.random()-0.5)*20;
+      const sh = ch/stripes*0.5;
+      const dx = (Math.random()-0.5)*30*glitchAmt;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, sy, cw, sh); ctx.clip();
+      ctx.globalAlpha = 0.5*glitchAmt;
+      ctx.drawImage(bufB, dx, 0);
+      ctx.restore();
+    }
+  }
+}
+
+function skewSlide(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  tBg(ctx,cw,ch);
+  ctx.save();
+  ctx.translate(-cw*e,0);
+  ctx.transform(1,0,-0.12*(1-Math.abs(0.5-e)*2),1,0,0);
+  ctx.drawImage(bufA,0,0,cw,ch);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(cw*(1-e),0);
+  ctx.transform(1,0,0.12*(1-Math.abs(0.5-e)*2),1,0,0);
+  ctx.drawImage(bufB,0,0,cw,ch);
+  ctx.restore();
+}
+
+function rotateCross(ctx,cw,ch,bufA,bufB,p){
+  const e = easeInOutCubic(p);
+  tBg(ctx,cw,ch);
+  tDraw(ctx,bufA,cw,ch,{alpha:1-e, rotate:-0.06*e, scale:1+0.04*e});
+  tDraw(ctx,bufB,cw,ch,{alpha:e, rotate:0.06*(1-e), scale:1.04-0.04*e});
+}
+
+const TRANSITIONS = {
+  crossfade:      { label:'Fundido cruzado',  render:(ctx,cw,ch,a,b,p)=>{ const e=easeInOutCubic(p); tBg(ctx,cw,ch); tDraw(ctx,a,cw,ch,{alpha:1-e}); tDraw(ctx,b,cw,ch,{alpha:e}); } },
+  'slide-left':   { label:'Deslizar izq.',    render: mkSlide('left') },
+  'slide-right':  { label:'Deslizar der.',    render: mkSlide('right') },
+  'slide-up':     { label:'Deslizar arriba',  render: mkSlide('up') },
+  'slide-down':   { label:'Deslizar abajo',   render: mkSlide('down') },
+  'wipe-left':    { label:'Barrido izq.',     render: mkWipe('left') },
+  'wipe-right':   { label:'Barrido der.',     render: mkWipe('right') },
+  'wipe-up':      { label:'Barrido arriba',   render: mkWipe('up') },
+  'wipe-down':    { label:'Barrido abajo',    render: mkWipe('down') },
+  'circle-expand':{ label:'Círculo expande',  render: circleTransition(false) },
+  'circle-shrink':{ label:'Círculo contrae',  render: circleTransition(true) },
+  'iris-square':  { label:'Iris cuadrado',    render: irisSquare },
+  'zoom-punch':   { label:'Zoom de impacto',  render: zoomPunchIn },
+  'zoom-blur':    { label:'Zoom con blur',    render: zoomBlurCross },
+  'spin-twist':   { label:'Giro',             render: spinTwistIn },
+  'blinds-h':     { label:'Persiana horiz.',  render: mkBlinds(false, 8) },
+  'blinds-v':     { label:'Persiana vert.',   render: mkBlinds(true, 8) },
+  'pixelate':     { label:'Pixelado',         render: pixelateCross },
+  'shutter':      { label:'Obturador',        render: shutterClose },
+  'bar-doors':    { label:'Puertas',          render: barDoorsOpen },
+  'clock-wipe':   { label:'Barrido de reloj', render: clockWipe },
+  'drop-in':      { label:'Caída con rebote', render: dropIn },
+  'rise-in':      { label:'Sube con rebote',  render: riseIn },
+  'flash-white':  { label:'Flash blanco',     render: flashSolid('#f5efe4') },
+  'flash-black':  { label:'Flash negro',      render: flashSolid('#0a0908') },
+  'flash-crimson':{ label:'Flash carmesí',    render: flashSolid(BRAND_COLORS[0]) },
+  'flash-gold':   { label:'Flash dorado',     render: flashSolid(BRAND_COLORS[1]) },
+  'flash-jade':   { label:'Flash jade',       render: flashSolid(BRAND_COLORS[2]) },
+  'glitch-rgb':   { label:'Glitch RGB',       render: glitchRGB },
+  'skew-slide':   { label:'Deslizar sesgado', render: skewSlide },
+  'rotate-cross': { label:'Giro cruzado',     render: rotateCross }
+};
+const TRANSITION_IDS = Object.keys(TRANSITIONS);
+// Subconjunto seguro para los micro-cortes rápidos dentro de un mismo clip
+// (duran ~0.12s): ahí solo caben efectos simples y veloces, los elaborados
+// (persianas, pixelado, glitch, obturador...) necesitan más tiempo para leerse.
+const QUICK_TRANSITION_IDS = ['crossfade','slide-left','slide-right','slide-up','slide-down','zoom-punch','flash-white','flash-crimson','flash-gold','flash-jade','rotate-cross'];
+
+let lastTransitionId = null;
+// Elige automáticamente qué transición usar en cada corte, evitando repetir
+// la misma dos veces seguidas — así cada clip recibe la que mejor le queda
+// sin que se sienta repetitivo a lo largo del video.
+function pickTransition(isQuickCut){
+  const pool = isQuickCut ? QUICK_TRANSITION_IDS : TRANSITION_IDS;
+  let choice, guard = 0;
+  do {
+    choice = pool[Math.floor(Math.random()*pool.length)];
+    guard++;
+  } while(choice === lastTransitionId && pool.length > 1 && guard < 8);
+  lastTransitionId = choice;
+  return choice;
+}
+
+const CAPTION_STYLES = {
+  'pop-pill':     { label:'Píldora dorada', desc:'Caja oscura, la palabra activa salta a una píldora dorada', render: renderPopPill },
+  'tiktok-line':  { label:'Línea TikTok',   desc:'Texto blanco con contorno negro, activa en amarillo y subrayada', render: renderTiktokLine },
+  'word-blast':   { label:'Palabra a palabra', desc:'Una palabra gigante a la vez, con golpe de impacto', render: renderWordBlast },
+  'neon-outline': { label:'Neón',           desc:'Contorno claro; la palabra activa se enciende con glow', render: renderNeonOutline },
+  'slide-marker': { label:'Marcador deslizante', desc:'Estilo CapCut: un resaltador dorado se desliza suave de palabra en palabra', render: renderSlideMarker },
+  'bounce-wave':  { label:'Ola de rebote', desc:'Cada palabra rebota en su color de marca al ritmo del guion, look juguetón', render: renderBounceWave },
+  'typewriter':   { label:'Máquina de escribir', desc:'El guion se escribe letra por letra con cursor, look limpio y elegante', render: renderTypewriter },
+  'impact-flash': { label:'Flash de impacto', desc:'Palabra gigante con destello de color y golpe de cámara — el look viral', render: renderImpactFlash }
+};
+const DEFAULT_CAPTION_STYLE = 'pop-pill';
+
+function drawOverlay(ctx, cw, ch, blend){
+  if(blend.chunks && blend.chunks.length && blend.narrStartTs){
+    const elapsed = (performance.now() - blend.narrStartTs) / 1000;
+    const style = CAPTION_STYLES[blend.captionStyle] || CAPTION_STYLES[DEFAULT_CAPTION_STYLE];
+    style.render(ctx, cw, ch, blend, elapsed);
+    return;
+  }
+  if(!blend.text) return;
+  drawStaticLabel(ctx, cw, ch, blend.text, blend.textT0, blend.textY);
+}
+
+// ---------- Selector de estilo de subtítulos (Fase 3) ----------
+// Construye una tarjeta por estilo, cada una con su propio mini-canvas que
+// reproduce en bucle una frase de ejemplo usando el MISMO código de dibujo
+// que se usará en el video final, para que la comparación sea real.
+let selectedCaptionStyle = DEFAULT_CAPTION_STYLE;
+
+const CAPTION_PREVIEW_CHUNKS = [
+  [ { text:'TINTA', start:0.0, end:0.5 }, { text:'QUE', start:0.5, end:0.7 }, { text:'IMPACTA', start:0.7, end:1.3 } ],
+  [ { text:'TU', start:1.7, end:1.9 }, { text:'HISTORIA', start:1.9, end:2.6 } ]
+];
+const CAPTION_PREVIEW_LOOP = 3.3; // segundos, incluye la salida del último chunk
+
+function buildCaptionStylePicker(){
+  const grid = document.getElementById('cspGrid');
+  if(!grid) return;
+  const previewCanvases = [];
+
+  Object.keys(CAPTION_STYLES).forEach(styleId=>{
+    const style = CAPTION_STYLES[styleId];
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'csp-card' + (styleId === selectedCaptionStyle ? ' active' : '');
+    card.dataset.style = styleId;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 260; canvas.height = 150;
+    card.appendChild(canvas);
+
+    const label = document.createElement('div');
+    label.className = 'csp-label';
+    label.textContent = style.label;
+    card.appendChild(label);
+
+    const desc = document.createElement('div');
+    desc.className = 'csp-desc';
+    desc.textContent = style.desc;
+    card.appendChild(desc);
+
+    card.addEventListener('click', ()=>{
+      selectedCaptionStyle = styleId;
+      grid.querySelectorAll('.csp-card').forEach(c=>c.classList.remove('active'));
+      card.classList.add('active');
+    });
+
+    grid.appendChild(card);
+    previewCanvases.push({ canvas, ctx: canvas.getContext('2d'), style });
+  });
+
+  const loopStart = performance.now();
+  function tick(){
+    const elapsed = ((performance.now() - loopStart) / 1000) % CAPTION_PREVIEW_LOOP;
+    previewCanvases.forEach(({canvas, ctx, style})=>{
+      const cw = canvas.width, ch = canvas.height;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.fillStyle = '#0a0908';
+      ctx.fillRect(0, 0, cw, ch);
+      style.render(ctx, cw, ch, { chunks: CAPTION_PREVIEW_CHUNKS, narrStartTs: null, textY: 0.62 }, elapsed);
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+buildCaptionStylePicker();
+
+
+function seekTo(video, t){
+  return new Promise(res=>{
+    if(Math.abs(video.currentTime - t) < 0.05){ res(); return; }
+    const handler = ()=>{ video.removeEventListener('seeked', handler); res(); };
+    video.addEventListener('seeked', handler);
+    video.currentTime = t;
+  });
+}
+
+function withTimeout(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise(res => setTimeout(res, ms))
+  ]);
+}
+
+function waitUntilTime(video, t){
+  return withTimeout(new Promise(res=>{
+    const handler = ()=>{
+      if(video.currentTime >= t){ video.removeEventListener('timeupdate', handler); res(); }
+    };
+    video.addEventListener('timeupdate', handler);
+    video.addEventListener('ended', res, { once:true });
+  }), 15000);
+}
+
+function loadClipInto(videoEl, file){
+  function tryLoad(src){
+    return new Promise((resolve, reject)=>{
+      const codeMap = {
+        1: 'la carga se interrumpió',
+        2: 'error de red al leerlo',
+        3: 'no se pudo decodificar — el códec del video no es compatible',
+        4: 'formato no soportado por el navegador'
+      };
+      const timer = setTimeout(()=>{ cleanup(); reject(new Error('timeout')); }, 8000);
+      function cleanup(){
+        clearTimeout(timer);
+        videoEl.removeEventListener('loadedmetadata', onLoaded);
+        videoEl.removeEventListener('error', onError);
+      }
+      function onLoaded(){ cleanup(); resolve(); }
+      function onError(){
+        cleanup();
+        const code = videoEl.error ? videoEl.error.code : 0;
+        reject(new Error(codeMap[code] || 'archivo no soportado'));
+      }
+      videoEl.addEventListener('loadedmetadata', onLoaded);
+      videoEl.addEventListener('error', onError);
+      videoEl.src = src;
+    });
+  }
+
+  return new Promise((resolve, reject)=>{
+    const blobUrl = URL.createObjectURL(file);
+    tryLoad(blobUrl).then(()=>{
+      seekTo(videoEl, 0).then(resolve);
+    }).catch(()=>{
+      // respaldo: si el blob URL falla (por ejemplo, por restricciones del entorno embebido),
+      // reintenta cargando el video como data URI
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        tryLoad(reader.result).then(()=>{
+          seekTo(videoEl, 0).then(resolve);
+        }).catch((err2)=>{
+          reject(new Error(`"${file.name}" no se pudo cargar ni por blob ni por data URI (${err2.message}). Prueba abriendo esta app en una pestaña nueva del navegador en vez del recuadro embebido — busca el ícono de expandir/abrir arriba del recuadro.`));
+        });
+      };
+      reader.onerror = ()=> reject(new Error(`No se pudo leer "${file.name}" del todo.`));
+      reader.readAsDataURL(file);
+    });
+  });
+}
+
+// Muestrea todo el clip y devuelve una curva de "movimiento" (diferencia de píxeles
+// entre fotogramas consecutivos). Se reutiliza tanto para elegir un único mejor
+// momento como para armar mini-montajes de varias tomas.
+async function sampleMotion(video, statusCb){
+  const duration = video.duration;
+  if(!isFinite(duration) || duration <= 0) return { duration: 0, motion: [] };
+
+  const sampleCount = Math.min(24, Math.max(8, Math.floor(duration * 2)));
+  const times = [];
+  for(let i=0; i<=sampleCount; i++) times.push((duration * i) / sampleCount);
+
+  const ac = document.createElement('canvas');
+  ac.width = 48; ac.height = 80;
+  const actx = ac.getContext('2d', { willReadFrequently: true });
+
+  let prevData = null;
+  const motion = [];
+  for(let i=0; i<times.length; i++){
+    if(statusCb) statusCb(i, times.length);
+    await seekTo(video, times[i]);
+    actx.drawImage(video, 0, 0, ac.width, ac.height);
+    const data = actx.getImageData(0, 0, ac.width, ac.height).data;
+    let score = 0;
+    if(prevData){
+      for(let p=0; p<data.length; p+=4){
+        score += Math.abs(data[p]-prevData[p]) + Math.abs(data[p+1]-prevData[p+1]) + Math.abs(data[p+2]-prevData[p+2]);
+      }
+    }
+    motion.push({ t: times[i], score });
+    prevData = data;
+  }
+  await seekTo(video, 0);
+  return { duration, motion };
+}
+
+function scoreWindow(motion, start, windowDuration){
+  let sum = 0;
+  for(let j=0; j<motion.length; j++){
+    if(motion[j].t >= start && motion[j].t < start + windowDuration) sum += motion[j].score;
+  }
+  return sum;
+}
+
+// Elige hasta maxSegments ventanas de segDuration segundos, sin traslape entre sí,
+// priorizando las de más movimiento — y las devuelve en orden cronológico para que
+// el mini-montaje se sienta como un avance natural del clip, no aleatorio.
+function pickTopSegments(motion, duration, segDuration, maxSegments){
+  if(!isFinite(duration) || duration <= 0) return [{ start: 0, dur: segDuration }];
+  const step = Math.max(0.15, segDuration / 4);
+  const candidates = [];
+  for(let start = 0; start + segDuration <= duration; start += step){
+    candidates.push({ start, score: scoreWindow(motion, start, segDuration) });
+  }
+  if(candidates.length === 0) return [{ start: 0, dur: Math.min(segDuration, duration) }];
+
+  candidates.sort((a, b) => b.score - a.score);
+  const picked = [];
+  for(const c of candidates){
+    if(picked.length >= maxSegments) break;
+    const overlaps = picked.some(p => Math.abs(p.start - c.start) < segDuration * 0.8);
+    if(!overlaps) picked.push(c);
+  }
+  picked.sort((a, b) => a.start - b.start);
+  return picked.map(p => ({ start: p.start, dur: segDuration }));
+}
+
+// Decide en cuántas micro-tomas dividir un clip según la duración que le tocó
+// (duracion_sugerida_seg): si es corta, una sola toma; si es más larga, la parte
+// en 2-4 cortes rápidos del mismo material para armar un mini-montaje dinámico.
+async function analyzeClipSegments(video, totalDuration, statusCb){
+  const { duration, motion } = await sampleMotion(video, statusCb);
+  if(!isFinite(duration) || duration <= 0) return [{ start: 0, dur: totalDuration }];
+
+  const segCount = Math.max(1, Math.min(4, Math.round(totalDuration / 2.2)));
+  const segDuration = Math.max(0.9, Math.min(3.2, totalDuration / segCount));
+
+  if(segCount <= 1 || duration <= segDuration + 0.2){
+    let bestStart = 0, bestScore = -1;
+    for(let i = 0; i < motion.length; i++){
+      const start = motion[i].t;
+      if(start + segDuration > duration) continue;
+      const s = scoreWindow(motion, start, segDuration);
+      if(s > bestScore){ bestScore = s; bestStart = start; }
+    }
+    return [{ start: bestStart, dur: Math.min(segDuration, duration) }];
+  }
+
+  return pickTopSegments(motion, duration, segDuration, segCount);
+}
+
+// Agrupa el timing por palabra en "chunks" cortos (2-3 palabras o ~1.5s) para
+// mostrar como subtítulo karaoke, uno a la vez, en vez de la frase entera.
+function buildCaptionChunks(words){
+  if(!words || !words.length) return [];
+  const chunks = [];
+  let cur = [];
+  let curStart = null;
+  words.forEach(w=>{
+    if(w.start == null || w.end == null) return;
+    if(cur.length === 0) curStart = w.start;
+    cur.push(w);
+    const dur = w.end - curStart;
+    if(cur.length >= 3 || dur >= 1.5){
+      chunks.push(cur);
+      cur = [];
+    }
+  });
+  if(cur.length) chunks.push(cur);
+  return chunks;
+}
+
+// Respaldo cuando no hay timing real por palabra (falló la alineación de
+// ElevenLabs o no se generó narración): reparte una duración pareja entre las
+// palabras del GUION COMPLETO (narracion) del clip -no del texto_pantalla, que
+// es corto y a veces distinto o vacío- para que el texto en pantalla muestre
+// siempre el mismo guion que se generó, palabra por palabra durante todo el
+// clip, en vez de mostrarse como rótulo estático o quedarse corto.
+function synthCaptionChunks(text, totalDuration){
+  const wordsArr = (text || '').trim().split(/\s+/).filter(Boolean);
+  if(!wordsArr.length) return [];
+  const dur = Math.max(1.4, totalDuration || 2.6);
+  const per = dur / wordsArr.length;
+  const timed = wordsArr.map((w,i)=>({ text: w, start: i*per, end: (i+1)*per }));
+  return buildCaptionChunks(timed);
+}
+
+async function runVideoAssembly(plan, btn){
+  const p3Status = document.getElementById('p3Status');
+
+  if(plan.some(p => !p.file)){
+    p3Status.textContent = 'Falta cargar el clip real de al menos una parte. Súbelos arriba en "Clip de referencia".';
+    p3Status.className = 'status err';
+    return;
+  }
+
+  btn.disabled = true;
+  document.getElementById('p3Preview').style.display = 'none';
+  document.getElementById('p3Download').style.display = 'none';
+
+  let canvasEl = null; // referencia para poder quitarlo del DOM al terminar (éxito o error)
+
+  try{
+    await document.fonts.ready;
+
+    const videoA = document.getElementById('p3VideoA');
+    const videoB = document.getElementById('p3VideoB');
+    const pool = [videoA, videoB];
+
+    // ---------- Paso previo: analizar cada clip y partirlo en mini-tomas ----------
+    // Antes de grabar nada, cargamos cada clip real (una sola vez) y detectamos
+    // sus mejores momentos. Si a un clip le tocó poca duración se queda en una
+    // sola toma; si le tocó más, se corta en 2-4 micro-tomas dinámicas del mismo
+    // material para armar un mini-montaje en vez de sostener un plano estático.
+    for(let i=0; i<plan.length; i++){
+      p3Status.textContent = `Analizando clip ${i+1} de ${plan.length}...`;
+      await loadClipInto(pool[0], plan[i].file);
+      const clipTotalDuration = Math.min(plan[i].clip.duracion_sugerida_seg || 4, pool[0].duration || 4);
+      plan[i].segments = await analyzeClipSegments(pool[0], clipTotalDuration, (idx, n)=>{
+        p3Status.textContent = `Analizando clip ${i+1} de ${plan.length}... (${idx+1}/${n})`;
+      });
+    }
+
+    // ---------- Aplana el plan por clip en una lista plana de "tomas" ----------
+    const shots = [];
+    plan.forEach((p, ci)=>{
+      // El texto en pantalla SIEMPRE debe ser el guion real del clip (narracion),
+      // igual al que se generó y se ve en la revisión del guion arriba -nunca el
+      // texto_pantalla, que es un campo corto/opcional pensado para otra cosa y
+      // que antes causaba que el video mostrara "otro guion" distinto y con muy
+      // pocas palabras. Si ElevenLabs devolvió timing real por palabra (Fase 2),
+      // se usa ese timing exacto; si no se generó narración o falló la
+      // alineación, se sintetiza un timing parejo repartiendo TODA la narracion
+      // a lo largo de la duración del clip, para que el guion completo se lea
+      // de principio a fin y a un ritmo acorde a su longitud (ni se corte ni se
+      // quede pegado esperando muy pocas palabras).
+      const realChunks = buildCaptionChunks(p.words);
+      const chunks = (realChunks && realChunks.length)
+        ? realChunks
+        : synthCaptionChunks(p.clip.narracion, p.clip.duracion_sugerida_seg);
+      p.segments.forEach((seg, si)=>{
+        shots.push({
+          file: p.file,
+          start: seg.start,
+          dur: seg.dur,
+          clipIndex: ci,
+          isFirstOfClip: si === 0,
+          narrationBuffer: si === 0 ? p.narrationBuffer : null,
+          text: si === 0 ? (p.clip.narracion || '') : '',
+          chunks: si === 0 ? chunks : null
+        });
+      });
+    });
+
+    const CW = 720, CH = 1280;
+    const canvas = document.createElement('canvas');
+    canvas.width = CW; canvas.height = CH;
+    // El canvas debe estar insertado en el documento (aunque quede oculto) para que
+    // captureStream() produzca fotogramas de forma confiable en todos los navegadores.
+    // Un canvas nunca adjuntado al DOM es la causa más común de un WebM que sale con
+    // 0 bytes de video real (solo el encabezado del contenedor, sin Cluster).
+    canvas.style.position = 'fixed';
+    canvas.style.left = '-9999px';
+    canvas.style.top = '-9999px';
+    canvas.style.opacity = '0';
+    canvas.style.pointerEvents = 'none';
+    document.body.appendChild(canvas);
+    canvasEl = canvas;
+    const ctx = canvas.getContext('2d');
+
+    // Lienzos auxiliares donde se pre-renderiza el fotograma saliente (A) y el
+    // entrante (B) de cada corte, para que la librería de transiciones los
+    // pueda componer (recortar, deslizar, difuminar, etc.) sin tocar el
+    // canvas principal hasta el resultado final.
+    const tBufA = document.createElement('canvas'); tBufA.width = CW; tBufA.height = CH;
+    const tCtxA = tBufA.getContext('2d');
+    const tBufB = document.createElement('canvas'); tBufB.width = CW; tBufB.height = CH;
+    const tCtxB = tBufB.getContext('2d');
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Si el AudioContext queda "suspended", el grafo de audio nunca avanza, y en
+    // varios navegadores el MediaRecorder combinado (video+audio) no suelta NINGÚN
+    // dato — ni siquiera del video — hasta que ambas pistas producen algo. Por eso
+    // se resume explícitamente y se ancla con un oscilador silencioso (ganancia 0)
+    // para garantizar que el grafo de audio esté siempre activo, en vez de depender
+    // de un destino sin ninguna fuente conectada.
+    if(audioCtx.state === 'suspended'){
+      try{ await audioCtx.resume(); } catch(e){ console.warn('No se pudo reanudar el AudioContext:', e); }
+    }
+    const audioDest = audioCtx.createMediaStreamDestination();
+    const silentAnchor = audioCtx.createOscillator();
+    const silentGain = audioCtx.createGain();
+    silentGain.gain.value = 0;
+    silentAnchor.connect(silentGain).connect(audioDest);
+    silentAnchor.start();
+    const canvasStream = canvas.captureStream(30);
+    const combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioDest.stream.getAudioTracks()]);
+
+    let mimeType = 'video/webm;codecs=vp9,opus';
+    if(!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+    const recorder = new MediaRecorder(combined, { mimeType });
+    let recorderError = null;
+    recorder.onerror = (e) => { recorderError = (e && e.error) || new Error('Error desconocido de MediaRecorder'); };
+    let totalBytes = 0;
+    const chunks = [];
+    recorder.ondataavailable = e => { if(e.data.size > 0){ chunks.push(e.data); totalBytes += e.data.size; } };
+
+    const finished = new Promise(resolve => { recorder.onstop = resolve; });
+    console.log('[INKBOT] audioCtx.state:', audioCtx.state,
+      '| video track:', canvasStream.getVideoTracks()[0] && canvasStream.getVideoTracks()[0].readyState,
+      '| audio track:', audioDest.stream.getAudioTracks()[0] && audioDest.stream.getAudioTracks()[0].readyState,
+      '| mimeType:', mimeType);
+    recorder.start(250); // flush cada 250ms en vez de solo al final
+
+    const blend = {
+      mode:'single', a:null, b:null, alpha:0,
+      text:'', textT0:0, textY:0.82, chunks:null, narrStartTs:0,
+      captionStyle: selectedCaptionStyle,
+      transitionId: 'crossfade',
+      aT0:0, aDur:1, aZoomDir:1, bT0:0, bDur:1, bZoomDir:-1
+    };
+    let drawing = true;
+
+    function drawLoop(){
+      if(!drawing) return;
+      ctx.fillStyle = '#120f0e';
+      ctx.fillRect(0,0,CW,CH);
+      if(blend.mode === 'single' && blend.a){
+        const z = kenBurnsZoom(blend.aZoomDir, blend.aT0, blend.aDur);
+        drawCover(ctx, blend.a, CW, CH, z);
+      } else if(blend.mode === 'cross'){
+        // A o B pueden venir null (apertura del video entrando desde negro, o
+        // cierre saliendo hacia negro): en ese caso el buffer se queda en negro sólido.
+        tCtxA.fillStyle = '#0a0908'; tCtxA.fillRect(0,0,CW,CH);
+        if(blend.a){
+          const zA = kenBurnsZoom(blend.aZoomDir, blend.aT0, blend.aDur);
+          drawCover(tCtxA, blend.a, CW, CH, zA);
+        }
+        tCtxB.fillStyle = '#0a0908'; tCtxB.fillRect(0,0,CW,CH);
+        if(blend.b){
+          // el clip entrante llega con un leve "punch-in" que se asienta al terminar la transición
+          const punch = 1 + (1 - blend.alpha) * 0.05;
+          const zB = kenBurnsZoom(blend.bZoomDir, blend.bT0, blend.bDur) * punch;
+          drawCover(tCtxB, blend.b, CW, CH, zB);
+        }
+        const trans = TRANSITIONS[blend.transitionId] || TRANSITIONS.crossfade;
+        trans.render(ctx, CW, CH, tBufA, tBufB, blend.alpha);
+      }
+      drawVignette(ctx, CW, CH);
+      drawOverlay(ctx, CW, CH, blend);
+      requestAnimationFrame(drawLoop);
+    }
+    drawLoop();
+
+    const TRANSITION_CLIP = 0.22; // cruce entre clips distintos, con "punch-in"
+    const TRANSITION_SHOT = 0.12; // corte rápido entre micro-tomas del mismo clip
+    const zoomDirFor = (idx) => (idx % 2 === 0 ? 1 : -1); // alterna acercar / alejar entre tomas
+
+    // precarga la primera toma (su mejor momento ya se calculó en el paso previo)
+    await loadClipInto(pool[0], shots[0].file);
+    await seekTo(pool[0], shots[0].start);
+    await pool[0].play();
+
+    // arranca el reloj de grabación real (para reparar la duración del WebM al final)
+    const recordStartTs = performance.now();
+
+    // ---------- Transición de apertura: entra desde negro hacia el primer clip ----------
+    {
+      const introDur = 0.5;
+      blend.mode = 'cross';
+      blend.transitionId = pickTransition(false);
+      blend.a = null; blend.aT0 = 0; blend.aDur = 1; blend.aZoomDir = 1;
+      blend.b = pool[0]; blend.bT0 = performance.now(); blend.bDur = shots[0].dur; blend.bZoomDir = zoomDirFor(0);
+      await new Promise(res=>{
+        const t0 = performance.now();
+        function step(){
+          blend.alpha = Math.min(1, (performance.now() - t0) / 1000 / introDur);
+          if(blend.alpha < 1) requestAnimationFrame(step); else res();
+        }
+        step();
+      });
+    }
+
+    let zoomT0 = performance.now(), zoomDur = shots[0].dur, zoomDir = zoomDirFor(0);
+    let audioDone = Promise.resolve();
+
+    for(let i=0; i<shots.length; i++){
+      const s = shots[i];
+      const cur = pool[i % 2];
+      const hasNext = i < shots.length - 1;
+      const nextIsSameClip = hasNext && shots[i+1].clipIndex === s.clipIndex;
+      const TRANSITION = nextIsSameClip ? TRANSITION_SHOT : TRANSITION_CLIP;
+
+      p3Status.textContent = `Armando toma ${i+1} de ${shots.length}...`;
+      p3Status.className = 'status';
+
+      const targetDuration = s.dur;
+      const segmentStart = s.start;
+      const endAbsolute = segmentStart + targetDuration;
+
+      blend.mode = 'single';
+      blend.a = cur;
+      blend.aT0 = zoomT0; blend.aDur = zoomDur; blend.aZoomDir = zoomDir;
+      if(s.isFirstOfClip){
+        // Siempre en el tercio inferior, centrado — nunca a media pantalla,
+        // para que jamás tape el tatuaje. 0.80 dentro del lienzo 9:16 cae
+        // justo arriba de la zona de UI de Instagram (que reserva la franja
+        // hasta abajo), así que el texto se ve completo sin quedar pegado al borde.
+        blend.textY = 0.80;
+        if(s.chunks && s.chunks.length){
+          blend.chunks = s.chunks;
+          blend.text = '';
+          // Si este clip no trae audio propio (raro, pero posible), arranca el
+          // reloj de los subtítulos ya mismo en vez de esperar a un evento que
+          // nunca llega; si sí hay audio, se resincroniza abajo con el inicio real.
+          blend.narrStartTs = s.narrationBuffer ? 0 : performance.now();
+        } else {
+          blend.chunks = null;
+          blend.text = s.text;
+          blend.textT0 = performance.now();
+        }
+      }
+
+      if(s.isFirstOfClip && s.narrationBuffer){
+        const src = audioCtx.createBufferSource();
+        src.buffer = s.narrationBuffer;
+        src.connect(audioDest);
+        src.start();
+        blend.narrStartTs = performance.now();
+        audioDone = new Promise(res => { src.onended = res; });
+      }
+
+      if(hasNext){
+        const next = pool[(i+1) % 2];
+        await loadClipInto(next, shots[i+1].file);
+        await seekTo(next, shots[i+1].start);
+
+        const waitPoint = segmentStart + Math.max(0.08, targetDuration - TRANSITION);
+        await waitUntilTime(cur, waitPoint);
+
+        await next.play();
+
+        const nextZoomDir = zoomDirFor(i+1);
+        const nextZoomT0 = performance.now();
+        const nextZoomDur = shots[i+1].dur;
+        blend.bT0 = nextZoomT0; blend.bDur = nextZoomDur; blend.bZoomDir = nextZoomDir;
+        // Cada corte elige sola su propio efecto del catálogo (~30 estilos),
+        // sin repetir el mismo dos veces seguidas.
+        blend.transitionId = pickTransition(nextIsSameClip);
+
+        await new Promise(res=>{
+          const t0 = performance.now();
+          function step(){
+            const elapsed = (performance.now() - t0) / 1000;
+            const prog = Math.min(1, elapsed / TRANSITION);
+            blend.mode = 'cross';
+            blend.a = cur; blend.b = next; blend.alpha = prog;
+            if(prog < 1) requestAnimationFrame(step); else res();
+          }
+          step();
+        });
+        cur.pause();
+
+        zoomT0 = nextZoomT0; zoomDur = nextZoomDur; zoomDir = nextZoomDir;
+      } else {
+        await waitUntilTime(cur, endAbsolute);
+        cur.pause();
+      }
+
+      if(!nextIsSameClip){
+        await withTimeout(audioDone, 100);
+      }
+    }
+
+    // ---------- Transición de cierre: sale del último clip hacia negro ----------
+    {
+      const outroDur = 0.45;
+      const lastCur = pool[(shots.length - 1) % 2];
+      blend.chunks = null; blend.text = ''; // los subtítulos ya se apagan antes del cierre
+      blend.mode = 'cross';
+      blend.transitionId = pickTransition(false);
+      blend.a = lastCur; blend.aT0 = zoomT0; blend.aDur = zoomDur; blend.aZoomDir = zoomDir;
+      blend.b = null; blend.bT0 = 0; blend.bDur = 1; blend.bZoomDir = 1;
+      await new Promise(res=>{
+        const t0 = performance.now();
+        function step(){
+          blend.alpha = Math.min(1, (performance.now() - t0) / 1000 / outroDur);
+          if(blend.alpha < 1) requestAnimationFrame(step); else res();
+        }
+        step();
+      });
+    }
+
+    drawing = false;
+    const recordedDurationSec = (performance.now() - recordStartTs) / 1000;
+    recorder.stop();
+    await finished;
+
+    if(recorderError){
+      throw new Error('Falló la grabación del video: ' + (recorderError.message || recorderError));
+    }
+    // Un WebM real de unos segundos pesa como mínimo varias decenas de KB. Si sale
+    // muchísimo más chico que eso, es que el canvas no emitió fotogramas reales
+    // (grabación vacía) — mejor avisar claro que entregar un archivo roto disfrazado
+    // de "listo".
+    if(totalBytes < 15000){
+      throw new Error(`La grabación no capturó video real (solo ${totalBytes} bytes). El canvas no está emitiendo fotogramas en este navegador/entorno. Intenta de nuevo — si se repite, prueba en otro navegador (Chrome de escritorio es el más confiable para esto).`);
+    }
+
+    const rawBlob = new Blob(chunks, { type: mimeType });
+    p3Status.textContent = 'Reparando metadatos del archivo...';
+    let blob;
+    try{
+      blob = await fixWebmDuration(rawBlob, recordedDurationSec);
+    } catch(fixErr){
+      console.warn('No se pudo reparar la duración del WebM, se entrega sin reparar:', fixErr);
+      blob = rawBlob;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const preview = document.getElementById('p3Preview');
+    preview.src = url;
+    preview.style.display = 'block';
+    const dl = document.getElementById('p3Download');
+    dl.href = url;
+    dl.style.display = 'block';
+
+    p3Status.textContent = 'Video listo — con duración reparada.';
+  } catch(err){
+    console.error(err);
+    p3Status.textContent = (err && err.message) ? err.message : 'Algo falló armando el video. Revisa que los clips hayan cargado bien e intenta de nuevo.';
+    p3Status.className = 'status err';
+  } finally {
+    btn.disabled = false;
+    if(canvasEl && canvasEl.parentNode) canvasEl.parentNode.removeChild(canvasEl);
+  }
+}
+
+document.getElementById('assembleVideo').addEventListener('click', async ()=>{
+  const clips = (currentResult && currentResult.clips) || [];
+  const domClips = document.querySelectorAll('.clip');
+  const btn = document.getElementById('assembleVideo');
+
+  if(!clips.length){
+    const p3Status = document.getElementById('p3Status');
+    p3Status.textContent = 'Genera el guion primero arriba, o usa "Ensamblar video sin guion ni voz" si no lo necesitas.';
+    p3Status.className = 'status err';
+    return;
+  }
+
+  const plan = clips.map((c, i)=>{
+    const fileInput = domClips[i] ? domClips[i].querySelector('.clip-file') : null;
+    const file = fileInput && fileInput.files && fileInput.files[0];
+    return { clip: c, file, narrationBuffer: generatedClipBuffers[i] || null, words: generatedClipWords[i] || null };
+  });
+
+  await runVideoAssembly(plan, btn);
+});
+
+// ---------- Ensamblado directo sin guion ni voz ----------
+// Salta por completo la generación de guion (Fase 1) y la narración (Fase 2):
+// solo corta y edita los clips reales que ya subiste arriba en "Clip de
+// referencia" — detección del mejor momento, micro-tomas, Ken Burns, apertura
+// y cierre, y las mismas ~30 transiciones — pero sin narración ni subtítulos,
+// repartiendo la "Duración objetivo del video final" en partes iguales entre
+// los clips que hayas cargado.
+document.getElementById('assembleRaw').addEventListener('click', async ()=>{
+  const domClips = document.querySelectorAll('.clip');
+  const btn = document.getElementById('assembleRaw');
+  const p3Status = document.getElementById('p3Status');
+
+  if(domClips.length === 0){
+    p3Status.textContent = 'Agrega al menos un clip arriba y súbele su archivo de video primero.';
+    p3Status.className = 'status err';
+    return;
+  }
+
+  const targetDuration = parseInt(document.getElementById('targetDuration').value, 10) || 60;
+  const perClip = targetDuration / domClips.length;
+
+  const plan = Array.from(domClips).map((el, i)=>{
+    const fileInput = el.querySelector('.clip-file');
+    const file = fileInput && fileInput.files && fileInput.files[0];
+    const etiqueta = (el.querySelector('.clip-label').value || '').trim() || `Clip ${i+1}`;
+    return {
+      clip: { orden: i+1, etiqueta, narracion: '', duracion_sugerida_seg: perClip },
+      file, narrationBuffer: null, words: null
+    };
+  });
+
+  document.getElementById('phase3Section').scrollIntoView({behavior:'smooth', block:'start'});
+  await runVideoAssembly(plan, btn);
+});
+// ---------- Fase 6: Auditoría pública ----------
+let competitorCount = 0;
+
+function addCompetitorRow(){
+  competitorCount++;
+  const id = competitorCount;
+  const div = document.createElement('div');
+  div.className = 'competitor-row';
+  div.dataset.id = id;
+  div.innerHTML = `
+    <input type="text" class="competitor-input" placeholder="@competidor">
+    <button type="button" onclick="removeCompetitorRow(${id})">Quitar</button>
+  `;
+  document.getElementById('auditCompetitors').appendChild(div);
+}
+
+function removeCompetitorRow(id){
+  document.querySelector(`.competitor-row[data-id="${id}"]`).remove();
+}
+
+document.getElementById('addCompetitor').addEventListener('click', ()=>addCompetitorRow());
+
+async function loadLastAudit(){
+  try{
+    const existing = await localStore.get('auditoria-publica');
+    if(existing && existing.value){
+      renderAudit(JSON.parse(existing.value));
+    }
+  } catch(e){ /* sin auditoría todavía */ }
+}
+
+async function runAudit(){
+  const selfUser = document.getElementById('auditSelf').value.trim().replace(/^@/, '');
+  const competitors = Array.from(document.querySelectorAll('.competitor-input'))
+    .map(i => i.value.trim().replace(/^@/, ''))
+    .filter(Boolean);
+
+  const statusEl = document.getElementById('auditStatus');
+  const btn = document.getElementById('runAudit');
+
+  if(!selfUser){
+    statusEl.textContent = 'Escribe tu usuario de Instagram primero.';
+    statusEl.className = 'status err';
+    return;
+  }
+
+  const setAuditStatus = (msg, isErr=false)=>{
+    statusEl.textContent = msg;
+    statusEl.className = 'status' + (isErr ? ' err' : '');
+  };
+  if(!requireAnthropicKey(setAuditStatus)) return;
+
+  btn.disabled = true;
+  statusEl.textContent = 'Buscando lo público de estas cuentas...';
+  statusEl.className = 'status';
+
+  try{
+    const userContent = `Cuenta propia: @${selfUser}\nCompetencia: ${competitors.length ? competitors.map(c => '@'+c).join(', ') : '(ninguna dada)'}`;
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: anthropicHeaders(),
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1800,
+        system: `Eres un auditor de redes sociales especializado en cuentas de tatuadores en Instagram. Se te da un usuario propio y, opcionalmente, usuarios de competencia. Usa la búsqueda web para encontrar SOLO información pública sobre cada cuenta (perfil público de Instagram, menciones, trackers públicos de seguidores tipo Social Blade, notas de prensa, etc.): seguidores aproximados si aparecen en algún resultado, bio, tipo de contenido que publican, estilo/temas recurrentes, y frecuencia de publicación si es deducible.
+
+No tienes acceso a métricas privadas (impresiones, alcance, guardados) ni al texto real de los comentarios de sus publicaciones — Instagram no expone eso fuera de la cuenta autenticada del dueño. Nunca inventes un dato que no viste en la búsqueda; si algo no se encuentra, dilo explícitamente como "no encontrado en búsqueda pública" en vez de rellenarlo.
+
+Responde EXCLUSIVAMENTE un objeto JSON, sin texto adicional, sin markdown, sin backticks, con esta estructura exacta:
+{"cuentas":[{"usuario":"string sin @","rol":"propia o competencia","seguidores_aprox":"string, ej. '12K' o 'no encontrado en búsqueda pública'","bio":"string o 'no encontrado'","temas_contenido":"string describiendo qué publican","frecuencia_estimada":"string o 'no se pudo estimar'","fuente":"string breve, de dónde salió el dato"}],"patrones":["string", ...4 a 8 patrones comparando la cuenta propia contra la competencia, basados en lo encontrado"],"comentarios_sentimiento":"string, resumen de cualquier señal pública de sentimiento/reacción de comunidad encontrada (menciones, reseñas); si no hay nada público al respecto, dilo con claridad","auditoria_contenido":"string, evaluación honesta de consistencia visual, frecuencia, hashtags y estilo de caption de la cuenta propia frente a la competencia","mejoras":["string", ...4 a 8 recomendaciones concretas y accionables, basadas en lo encontrado, nada genérico de manual de marketing"]}`,
+        messages: [{ role: "user", content: userContent }],
+        tools: [{ type: "web_search_20250305", name: "web_search" }]
+      })
+    });
+
+    const data = await response.json();
+    if(!response.ok){
+      throw new Error(data?.error?.message || `Error ${response.status} al llamar a Anthropic. Revisa tu API key.`);
+    }
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    parsed.fecha = new Date().toISOString();
+
+    await localStore.set('auditoria-publica', JSON.stringify(parsed));
+    renderAudit(parsed);
+    statusEl.textContent = 'Listo.';
+  } catch(err){
+    console.error(err);
+    statusEl.textContent = err.message || 'No se pudo completar el análisis. Intenta de nuevo.';
+    statusEl.className = 'status err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderAudit(data){
+  document.getElementById('auditResult').style.display = 'block';
+
+  if(data.fecha){
+    const d = new Date(data.fecha);
+    document.getElementById('auditUpdated').textContent =
+      `Último análisis: ${d.toLocaleDateString('es-MX', {day:'numeric', month:'short', year:'numeric'})}`;
+  }
+
+  const accWrap = document.getElementById('auditAccounts');
+  accWrap.innerHTML = '';
+  (data.cuentas || []).forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'audit-account';
+    div.innerHTML = `
+      <div class="aa-user">@${c.usuario || ''}</div>
+      <div class="aa-role">${c.rol === 'propia' ? 'Cuenta propia' : 'Competencia'}</div>
+      <div class="aa-row"><strong>Seguidores aprox:</strong> ${c.seguidores_aprox || 'no encontrado'}</div>
+      <div class="aa-row"><strong>Bio:</strong> ${c.bio || 'no encontrado'}</div>
+      <div class="aa-row"><strong>Contenido:</strong> ${c.temas_contenido || ''}</div>
+      <div class="aa-row"><strong>Frecuencia:</strong> ${c.frecuencia_estimada || 'no se pudo estimar'}</div>
+      <div class="aa-source">Fuente: ${c.fuente || 'no especificada'}</div>
+    `;
+    accWrap.appendChild(div);
+  });
+
+  const patWrap = document.getElementById('auditPatterns');
+  patWrap.innerHTML = '';
+  (data.patrones || []).forEach(p=>{
+    const li = document.createElement('li');
+    li.textContent = p;
+    patWrap.appendChild(li);
+  });
+
+  document.getElementById('auditSentiment').textContent = data.comentarios_sentimiento || '';
+  document.getElementById('auditContent').textContent = data.auditoria_contenido || '';
+
+  const impWrap = document.getElementById('auditImprovements');
+  impWrap.innerHTML = '';
+  (data.mejoras || []).forEach(m=>{
+    const li = document.createElement('li');
+    li.textContent = m;
+    impWrap.appendChild(li);
+  });
+}
+
+document.getElementById('runAudit').addEventListener('click', runAudit);
+loadLastAudit();
+// ---------- Asistente flotante de toda la app ----------
+// Botón flotante siempre visible: el tatuador le explica de qué va el video
+// en lenguaje libre, y el asistente pregunta —una cosa a la vez— solo lo que
+// realmente falte (tema, contexto/historia, qué se ve en cada clip, duración)
+// hasta tener lo suficiente para armar un guion completo y bien enfocado.
+// Cuando ya tiene todo, resume la info y deja aplicarla directo al formulario
+// de "De qué va este video" / "Tus clips" de arriba.
+const ASSISTANT_SYSTEM = `Eres el asistente completo de una app que genera guiones y videos verticales de Instagram/TikTok para un estudio de tatuajes. Tu trabajo en este chat es platicar con el tatuador ANTES de que arme el guion, para asegurar que la app tenga todo lo que necesita:
+- tema del video
+- contexto o historia que quiere que se note (ciudad, estilo, algo personal o distintivo)
+- duración objetivo aproximada del video final en segundos
+- la lista de clips/momentos en orden, cada uno con una descripción breve de qué se ve
+
+Reglas:
+1. Lee con cuidado lo que el tatuador ya te contó. Nunca preguntes por algo que ya te dijo, aunque lo haya dicho de forma desordenada o informal.
+2. Si falta algo importante o está muy ambiguo, haz UNA sola pregunta a la vez, breve, concreta y en tono cercano (no de formulario corporativo). No hagas listas largas de preguntas.
+3. En cuanto tengas tema, contexto, duración aproximada y al menos un clip con descripción razonable, deja de preguntar — no busques perfección, con lo suficiente para un guion bueno basta.
+4. Cuando ya tengas todo lo anterior, tu ÚNICA respuesta debe ser un objeto JSON, sin texto adicional, sin markdown, sin backticks, con esta forma exacta:
+{"listo":true,"tema":"string","contexto":"string","duracion_objetivo_seg":number,"clips":[{"etiqueta":"string corta","descripcion":"string, qué se ve en ese clip"}]}
+5. Si todavía falta algo, responde SOLO con tu siguiente pregunta en texto plano, nunca en JSON.
+6. Nunca mezcles pregunta y JSON en la misma respuesta.`;
+
+let assistantHistory = [];
+let assistantSummaryPending = null;
+
+function assistantEl(id){ return document.getElementById(id); }
+
+function appendAssistantMsg(role, text){
+  const body = assistantEl('assistantBody');
+  const div = document.createElement('div');
+  div.className = 'assistant-msg ' + role;
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function appendAssistantHint(text){
+  const body = assistantEl('assistantBody');
+  const div = document.createElement('div');
+  div.className = 'assistant-msg hint';
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function setAssistantStatus(msg, isErr=false){
+  const s = assistantEl('assistantStatus');
+  s.textContent = msg || '';
+  s.className = 'assistant-status' + (isErr ? ' err' : '');
+}
+
+function openAssistant(){
+  assistantEl('assistantOverlay').hidden = false;
+  if(assistantHistory.length === 0){
+    appendAssistantHint('Cuéntame de qué va a ir el video — tema, contexto, cuántos clips y qué se ve en cada uno. Pregunto solo lo que haga falta.');
+  }
+  assistantEl('assistantInput').focus();
+}
+
+function closeAssistant(){
+  assistantEl('assistantOverlay').hidden = true;
+}
+
+assistantEl('assistantFab').addEventListener('click', openAssistant);
+assistantEl('assistantClose').addEventListener('click', closeAssistant);
+assistantEl('assistantOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'assistantOverlay') closeAssistant();
+});
+assistantEl('assistantInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendAssistantMessage();
+  }
+});
+assistantEl('assistantSend').addEventListener('click', sendAssistantMessage);
+
+async function sendAssistantMessage(){
+  const input = assistantEl('assistantInput');
+  const text = input.value.trim();
+  if(!text) return;
+  if(!requireAnthropicKey((m, e)=>setAssistantStatus(m, e))) return;
+
+  appendAssistantMsg('user', text);
+  assistantHistory.push({ role: 'user', content: text });
+  input.value = '';
+
+  const sendBtn = assistantEl('assistantSend');
+  sendBtn.disabled = true;
+  setAssistantStatus('Pensando...');
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: anthropicHeaders(),
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 800,
+        system: ASSISTANT_SYSTEM,
+        messages: assistantHistory
+      })
+    });
+    const data = await response.json();
+    if(!response.ok){
+      throw new Error(data?.error?.message || `Error ${response.status} al llamar a Anthropic.`);
+    }
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    assistantHistory.push({ role: 'assistant', content: raw });
+
+    const clean = raw.replace(/```json|```/g, '').trim();
+    let parsed = null;
+    if(clean.startsWith('{')){
+      try{ parsed = JSON.parse(clean); }catch(e){ parsed = null; }
+    }
+
+    if(parsed && parsed.listo){
+      renderAssistantSummary(parsed);
+    } else {
+      appendAssistantMsg('assistant', raw.trim());
+    }
+    setAssistantStatus('');
+  } catch(err){
+    console.error(err);
+    setAssistantStatus(err.message || 'No se pudo contactar al asistente. Intenta de nuevo.', true);
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
+
+function renderAssistantSummary(summary){
+  assistantSummaryPending = summary;
+  const body = assistantEl('assistantBody');
+  const div = document.createElement('div');
+  div.className = 'assistant-summary';
+  const clipsList = (summary.clips || []).map(c => `<li><strong>${c.etiqueta || 'Clip'}</strong> — ${c.descripcion || ''}</li>`).join('');
+  div.innerHTML = `
+    <h4>Ya tengo lo que necesito</h4>
+    <div><strong>Tema:</strong> ${summary.tema || ''}</div>
+    <div><strong>Contexto:</strong> ${summary.contexto || ''}</div>
+    <div><strong>Duración objetivo:</strong> ~${summary.duracion_objetivo_seg || 60}s</div>
+    <ul>${clipsList}</ul>
+    <button type="button" class="assistant-apply" id="assistantApplyBtn">Usar esto en el guion</button>
+  `;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  document.getElementById('assistantApplyBtn').addEventListener('click', ()=>applyAssistantSummary(summary));
+}
+
+function applyAssistantSummary(summary){
+  document.getElementById('tema').value = summary.tema || '';
+  document.getElementById('contexto').value = summary.contexto || '';
+
+  const durSelect = document.getElementById('targetDuration');
+  const target = summary.duracion_objetivo_seg || 60;
+  let closest = durSelect.options[0].value;
+  let closestDiff = Infinity;
+  Array.from(durSelect.options).forEach(opt=>{
+    const diff = Math.abs(parseInt(opt.value, 10) - target);
+    if(diff < closestDiff){ closestDiff = diff; closest = opt.value; }
+  });
+  durSelect.value = closest;
+
+  document.querySelectorAll('.clip').forEach(el => el.remove());
+  clipCount = 0;
+  (summary.clips || []).forEach(c => addClipRow(c.etiqueta || '', c.descripcion || ''));
+  if((summary.clips || []).length === 0) addClipRow();
+
+  const contentTabBtn = document.querySelector('.tab-btn[data-tab="content"]');
+  if(contentTabBtn) contentTabBtn.click();
+
+  closeAssistant();
+  setStatus('Datos del asistente aplicados — revisa los clips y genera el guion cuando quieras.');
+  document.getElementById('tema').scrollIntoView({behavior:'smooth', block:'center'});
+}
+</script>
+
+</body>
+</html>
